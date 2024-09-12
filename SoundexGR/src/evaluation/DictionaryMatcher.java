@@ -105,9 +105,12 @@ public class DictionaryMatcher {
 		
 		//int nwordsFound = 0;
 		//for (int codeLen=12;  codeLen>=4;  codeLen--)  {
-		
+
+		codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen(word);
 		SoundexGRExtra.LengthEncoding = codeLength;
 		String wcode=SoundexGRExtra.encode(word);
+		System.out.println("Code length: "+codeLength+ " for word: "+word+ " with code: "+wcode);
+
 		Set<String> wordsHavingTheSameCode =  DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode);
 		ArrayList<String> matches = new ArrayList<>();
 		if (wordsHavingTheSameCode!=null) {

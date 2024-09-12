@@ -1,5 +1,7 @@
 package SoundexGR;
 
+import evaluation.DictionaryBasedMeasurements;
+
 /**
  * @author: Antrei Kavros and Yannis Tzitzikas
  */
@@ -620,6 +622,7 @@ public class SoundexGRExtra {
         
         //finalResult += "00000000"; 
         finalResult += "00000000000000000000"; // needed only in the case the lenth of the code is big
+        LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen(word);
         return finalResult.substring(0, LengthEncoding); // 4 letter length encoding
     }
     

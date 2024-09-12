@@ -2,6 +2,7 @@ package client;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
+import evaluation.BulkCheck;
 import evaluation.DictionaryMatcher;
 
 import javax.swing.*;
@@ -57,6 +58,7 @@ public class Dashboard  extends JFrame {
 		Dashboard.appSoundexCodeLen = newLen;
 		SoundexGRExtra.LengthEncoding=newLen;
 		SoundexGRSimple.LengthEncoding=newLen;
+		BulkCheck.print_fscores();
 		loadOrRefreshDictionary();
 	}
      
@@ -66,7 +68,6 @@ public class Dashboard  extends JFrame {
 			DictionaryMatcher.getMatchings("αυγόβββ", Dashboard.getAppSoundexCodeLen());
 			System.out.println("Dictionary loaded/refreshed.");
 		}).start();
-		
 	}
     
     /**

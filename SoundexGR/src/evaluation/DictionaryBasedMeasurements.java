@@ -249,21 +249,30 @@ public class DictionaryBasedMeasurements {
     }
 
 
-    private static int calculateSuggestedCodeLen(long _words_read) {
-        return (int) (Math.log10(_words_read));
-    }
+    public static int calculateSuggestedCodeLen(String word) {
+        int wordLen = word.length();
+        int suggestedCodeLen;
 
-    static long word_counter(BufferedReader fl) {
-        String line;
-        long counter = 0;
-        try {
-            while ((line = fl.readLine()) != null) {
-                counter++;
-            }
-        } catch (Exception e) {
-            System.out.println(e);
+        if (wordLen == 0) {
+            suggestedCodeLen = 0;
+        } else if (wordLen == 1) {
+            suggestedCodeLen = 1;
+        }else if (wordLen == 2) {
+            suggestedCodeLen = 2;
+        } else if (wordLen == 3) {
+            suggestedCodeLen = 3;
+        } else if (wordLen <= 5) {
+            suggestedCodeLen = 4;
+        } else if (wordLen <= 7) {
+            suggestedCodeLen = 5;
+        } else if (wordLen <= 9) {
+            suggestedCodeLen = 6;
+        } else {
+            suggestedCodeLen = 7;
         }
-        return counter;
+
+        SoundexGRExtra.LengthEncoding = suggestedCodeLen;
+        return suggestedCodeLen;
     }
 
 
@@ -273,51 +282,39 @@ public class DictionaryBasedMeasurements {
      * @param code
      * @return
      */
-    public static Set<String> returnWordsHavingTheSameCode(String code) {
-        if (codesToWords == null) {    // the dictionary has not been processed
-            codesToWords = new HashMap<>(); // the map
-            String line;
+	public static Set<String> returnWordsHavingTheSameCode(String code) {
+		if  (codesToWords==null) { 	// the dictionary has not been processed
+			codesToWords = new HashMap<>(); // the map
+			String line;
+            //System.out.println("\nString code : " + code);
 
-            try {
-                InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
+			System.out.println("Starting encoding the dictionary with code length " +SoundexGRExtra.LengthEncoding);
 
-                BufferedReader bfr_temp = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
-                words_read = word_counter(bfr_temp);
-                Dashboard.setAppSoundexCodeLen(calculateSuggestedCodeLen(words_read));
-                System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
+			try {
+				InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
+				BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict,"UTF-8"));
 
-                BulkCheck.performExperiments(0, SoundexGRExtra.LengthEncoding);
-
-                System.out.println("Words read: " + words_read);
-                bfr_temp.close();
-
-                inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
-
-                //FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");BufferedReader bfr = new BufferedReader(fl);
-                while ((line = bfr.readLine()) != null) {
-                    add_current_datasetSize(1);
-                    String wordEncoded = SoundexGRExtra.encode(line);
-                    HashSet wordsWithThatCode = codesToWords.get(wordEncoded);
-                    if (wordsWithThatCode == null) { // the code is not in the map
-                        wordsWithThatCode = new HashSet();
-                        wordsWithThatCode.add(line);
-                        codesToWords.put(wordEncoded, wordsWithThatCode);
-                    } else {
-                        wordsWithThatCode.add(line);
-                    }
-                }
-                //bfr.close(); /// TODO to check
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-
-            //System.out.println(codesToWords);
-            DatasetSize = codesToWords.keySet().size();
-            System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
-        }
-        return codesToWords.get(code);
-    }
+				//FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");BufferedReader bfr = new BufferedReader(fl);
+				while ((line = bfr.readLine()) != null) {
+					String      wordEncoded = SoundexGRExtra.encode(line);
+					HashSet wordsWithThatCode = codesToWords.get(wordEncoded);
+					if (wordsWithThatCode==null) { // the code is not in the map
+						wordsWithThatCode = new HashSet();
+						wordsWithThatCode.add(line);
+						codesToWords.put(wordEncoded,wordsWithThatCode);
+					} else {
+						wordsWithThatCode.add(line);
+					}
+				}
+				//bfr.close(); /// TODO to check
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+			//System.out.println(codesToWords);
+			System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
+		}
+		return codesToWords.get(code);
+	}
 
 
     /**
