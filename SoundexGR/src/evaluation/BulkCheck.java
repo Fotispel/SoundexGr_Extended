@@ -29,6 +29,7 @@ import utils.Utilities;
 
 public class BulkCheck {
     public static int length_temp = 0;
+    public static float[] general_word_length_per_code_length = new float[10]; // for storing the word length per code length
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
 
@@ -159,7 +160,8 @@ public class BulkCheck {
         float[] avg_word_length_per_code_length = new float[10];
         for (int i = 0; i < 10; i++) {
             avg_word_length_per_code_length[i] = (float) sum_word_length_per_code_length[i] / count_words_per_code_length[i];
-            System.out.println("Code length: " + i + " Average word length: " + avg_word_length_per_code_length[i]);
+            general_word_length_per_code_length[i] += avg_word_length_per_code_length[i];
+            //System.out.println("Code length: " + i + " Average word length: " + avg_word_length_per_code_length[i]);
         }
 
         long end = System.nanoTime();
@@ -384,6 +386,9 @@ public class BulkCheck {
                 System.out.print("\n[" + datasetFile + "]\n");
                 bulkCheckRun.check(utils, datasetFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
                 utils.clear();
+            }
+            for (int i = 0; i < 10; i++) {
+                System.out.println("Code length: " + i + " Average word length: " + general_word_length_per_code_length[i] / 5);
             }
         } catch (IOException ex) {
             System.out.println(ex);
