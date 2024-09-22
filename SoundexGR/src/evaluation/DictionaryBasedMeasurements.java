@@ -253,26 +253,9 @@ public class DictionaryBasedMeasurements {
         int wordLen = word.length();
         int suggestedCodeLen;
 
-        if (wordLen == 0) {
-            suggestedCodeLen = 0;
-        } else if (wordLen == 1) {
-            suggestedCodeLen = 1;
-        }else if (wordLen == 2) {
-            suggestedCodeLen = 2;
-        } else if (wordLen == 3) {
-            suggestedCodeLen = 3;
-        } else if (wordLen <= 5) {
-            suggestedCodeLen = 4;
-        } else if (wordLen <= 7) {
-            suggestedCodeLen = 5;
-        } else if (wordLen <= 9) {
-            suggestedCodeLen = 6;
-        } else {
-            suggestedCodeLen = 7;
-        }
+        return 0;
 
-        SoundexGRExtra.LengthEncoding = suggestedCodeLen;
-        return suggestedCodeLen;
+
     }
 
 

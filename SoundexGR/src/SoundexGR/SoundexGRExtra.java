@@ -1,5 +1,6 @@
 package SoundexGR;
 
+import evaluation.BulkCheck;
 import evaluation.DictionaryBasedMeasurements;
 
 /**
@@ -622,7 +623,7 @@ public class SoundexGRExtra {
         
         //finalResult += "00000000"; 
         finalResult += "00000000000000000000"; // needed only in the case the lenth of the code is big
-        LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen(word);
+        LengthEncoding = BulkCheck.length_temp;
         return finalResult.substring(0, LengthEncoding); // 4 letter length encoding
     }
     
