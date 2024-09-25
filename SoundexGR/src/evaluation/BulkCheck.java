@@ -5,15 +5,8 @@
  */
 package evaluation;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Objects;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +15,8 @@ import SoundexGR.SoundexGRSimple;
 import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
+
+import javax.print.Doc;
 //import org.apache.commons.text.similarity.LevenshteinDistance;
 
 /**
@@ -192,6 +187,13 @@ public class BulkCheck {
             throw new RuntimeException("SoundexGRExtra.LengthEncoding!=SoundexGRSimple.LengthEncoding");
         }
         */
+
+        if (mw == null) {
+            String filename = "Resources/measurements/currentMeasurements.csv";
+            mw = new MeasurementsWriter(filename);
+            mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
+        }
+
 
         mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
         mw.write(avgPrecision + ",");
@@ -375,25 +377,70 @@ public class BulkCheck {
         }
     }
 
+    private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
+        try {
+            if (allWordsByDoc.isEmpty()) {
+                throw new RuntimeException("No words in the given document");
+            }
+
+            for (String docName : DocNames) {
+                String fileName = "Resources//" + docName + "_words.txt";
+                FileWriter fr = new FileWriter(fileName);
+                BufferedWriter br = new BufferedWriter(fr);
+
+                Set<String> words = allWordsByDoc.get(docName);
+                for (String word : words) {
+                    br.write(word + "\n");
+                }
+
+                br.close();
+                fr.close();
+            }
+        } catch (IOException ex) {
+            System.out.println(ex);
+            Logger.getLogger(BulkCheck.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public static void print_fscores() {
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
 
-        if (mw == null) { // if already created
-            String filename = "Resources/measurements/currentMeasurements.csv";
-            System.out.println("Creating a new file: " + filename);
-            mw = new MeasurementsWriter(filename);
-            mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
+        List<String> tokensOfDoc = null;
+        Map<String, List<String>> allTokensByDoc = new HashMap<>();  // To store tokens per document
+        Map<String, Set<String>> allWordsByDoc = new HashMap<>();
+        Set<String> commonwords = null;
+        Map<Document, Double> scores = new HashMap<Document, Double>();
+        ArrayList<String> DocNames = new ArrayList<>();
+
+        IRSystem irs = new IRSystem();
+        DocumentCorpus corpus = new DocumentCorpus("Resources//collection");
+        irs.setCorpus(corpus);
+
+        for (Document d : corpus.getDocs()) {
+            String docURI = String.valueOf(d.uri);
+            String docName = docURI.substring(docURI.lastIndexOf("/") + 1);
+            docName = docName.replace(".txt", "");
+            DocNames.add(docName);
+
+            // Tokenize the document content
+            tokensOfDoc = Tokenizer.getTokens(d.contents);
+
+            // Save tokens in the map (List<String> for tokens)
+            allTokensByDoc.put(docName, new ArrayList<>(tokensOfDoc));
+
+            // Save unique words in the map (Set<String> for unique words)
+            allWordsByDoc.put(docName, new HashSet<>(tokensOfDoc));
         }
 
-        String DatasetFiles[] = {
-                "Resources/names/additions.txt",        // additions
-                "Resources/names/subs.txt",            // subtitutions
-                "Resources/names/deletions.txt",        // deletions
-                "Resources/names/same_sounded.txt",        // same sounded
-                "Resources/names/same_soundedExtended.txt"        // same sounded (more)
-        };
+        write_wordsOfDoc_to_files(allWordsByDoc, DocNames);
+
+        List<String> datasetFileList = new ArrayList<>();
+        for (String docName : DocNames) {
+            datasetFileList.add(String.format("Resources//%s_words.txt", docName));  // Add each path to the list
+        }
+        String[] DatasetFiles = datasetFileList.toArray(new String[0]);
+
 
         int number_of_datasets = DatasetFiles.length;
         try {
@@ -417,7 +464,6 @@ public class BulkCheck {
 
         System.out.println("\n\n");
     }
-
 
     public static void main(String[] args) {
         System.out.println("[BulkCheck]-start");
