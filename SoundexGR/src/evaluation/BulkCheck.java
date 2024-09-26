@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
+import client.Dashboard;
 import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
@@ -384,7 +385,7 @@ public class BulkCheck {
             }
 
             for (String docName : DocNames) {
-                String fileName = "Resources//" + docName + "_words.txt";
+                String fileName = "Resources//collection_words//" + docName + "_words.txt";
                 FileWriter fr = new FileWriter(fileName);
                 BufferedWriter br = new BufferedWriter(fr);
 
@@ -437,20 +438,40 @@ public class BulkCheck {
 
         List<String> datasetFileList = new ArrayList<>();
         for (String docName : DocNames) {
-            datasetFileList.add(String.format("Resources//%s_words.txt", docName));  // Add each path to the list
+            datasetFileList.add(String.format("Resources//collection_words//%s_words.txt", docName));  // Add each path to the list
         }
         String[] DatasetFiles = datasetFileList.toArray(new String[0]);
 
-
         int number_of_datasets = DatasetFiles.length;
         try {
+            for (String datasetFile : DatasetFiles) {
+                utils.readFile(datasetFile);
+                String input = utils.getContents(datasetFile);
+                ArrayList<String> tokens = Tokenizer.getTokens(input);
+
+                String output = "";
+                for (String token : tokens) {
+                    output += token + "";
+                    for (String errorStr : DictionaryBasedMeasurements.returnVariations(token)) {
+                        output += ", " + errorStr;
+                        //System.out.println(output);
+                    }
+                    output += "\n";
+                }
+                utils.writeToFile(output,"Resources//collection_words_misspellings//misspellings_" + datasetFile.substring(datasetFile.lastIndexOf("/") + 1));
+            }
+
+            for (int j=0; j< DatasetFiles.length;j++)
+            {
+                DatasetFiles[j] = "Resources//collection_words_misspellings//misspellings_" + DatasetFiles[j].substring(DatasetFiles[j].lastIndexOf("/") + 1);
+            }
+
             for (String datasetFile : DatasetFiles) {
                 utils.readFile(datasetFile);
                 System.out.print("\n[" + datasetFile + "]\n");
                 bulkCheckRun.check(utils, datasetFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
                 utils.clear();
             }
-
 
             System.out.println("\n\nOverall code length per word length:");
             for (int i = 1; i < 10; i++) {

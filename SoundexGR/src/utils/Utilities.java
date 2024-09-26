@@ -287,4 +287,27 @@ public class Utilities {
                 query = input.nextLine();
             }
     }
+
+
+    public String getContents(String path) {
+        // Get what is written in the file and return it as a string
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                content.append(line).append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return content.toString();
+    }
+
+    public void writeToFile(String content, String path) {
+        try (FileWriter writer = new FileWriter(path)) {
+            writer.write(content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
