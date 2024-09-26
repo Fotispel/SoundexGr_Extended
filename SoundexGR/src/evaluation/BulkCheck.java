@@ -26,7 +26,7 @@ import javax.print.Doc;
 
 public class BulkCheck {
     public static int length_temp = 0;
-    public static float[] overall_code_length_per_word_length = new float[10];
+    public static float[] overall_code_length_per_word_length = new float[22];
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
 
@@ -143,7 +143,7 @@ public class BulkCheck {
                 }
 
                 length_temp++;
-            } while (length_temp <= 9);
+            } while (length_temp < 22);
             //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
 
             //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
@@ -152,18 +152,18 @@ public class BulkCheck {
             counter_for_matching_word_and_code_length++;
         }
 
-        int[] count_code_lengths_per_word_length = new int[20]; // for counting the number of words per code length
-        int[] sum_code_length_per_word_length = new int[20]; // for summing the word length per code length
+        int[] count_code_lengths_per_word_length = new int[23]; // for counting the number of words per code length
+        int[] sum_code_length_per_word_length = new int[23]; // for summing the word length per code length
         for (int i = 0; i < counter_for_matching_word_and_code_length; i++) {
             //System.out.println("Word length: " + matching_word_and_code_length[i][0] + " Suggested code length: " + matching_word_and_code_length[i][1]);
             count_code_lengths_per_word_length[matching_word_and_code_length[i][0]]++;
             sum_code_length_per_word_length[matching_word_and_code_length[i][0]] += matching_word_and_code_length[i][1];
         }
-        float[] avg_code_length_per_word_length = new float[20];
+        float[] avg_code_length_per_word_length = new float[23];
         for (int i = 0; i < avg_code_length_per_word_length.length; i++) {
             avg_code_length_per_word_length[i] = 0;
         }
-        for (int i = 1; i < 10; i++) {
+        for (int i = 2; i < 22; i++) {
             //System.out.println("Sum word length: " + sum_word_length_per_code_length[i] + " Count words: " + count_words_per_code_length[i]);
             if (count_code_lengths_per_word_length[i] > 0) {
                 avg_code_length_per_word_length[i] = (float) sum_code_length_per_word_length[i] / count_code_lengths_per_word_length[i];
@@ -474,7 +474,7 @@ public class BulkCheck {
             }
 
             System.out.println("\n\nOverall code length per word length:");
-            for (int i = 1; i < 10; i++) {
+            for (int i = 2; i < 22; i++) {
                 overall_code_length_per_word_length[i] /= number_of_datasets;
                 System.out.println("Word length: " + i + " Avg code length: " + overall_code_length_per_word_length[i]);
             }
