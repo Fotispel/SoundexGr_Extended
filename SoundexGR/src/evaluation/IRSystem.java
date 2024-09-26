@@ -1,11 +1,9 @@
 package evaluation;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +15,9 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import evaluation.Tokenizer;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.net.URL;
 
@@ -26,9 +27,8 @@ import java.net.URL;
  */
 
 /**
- *
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
- *  Class for document, where each doc created gets a new id, it has a URI and a textual content
+ * Class for document, where each doc created gets a new id, it has a URI and a textual content
  */
 class Document {
     static int curID = 1;
@@ -48,10 +48,24 @@ class Document {
         id = curID++;
         uri = file.toURI();
         try {
-            contents = new Scanner(file).useDelimiter("\\Z").next();
+            if (file.getName().endsWith(".pdf")) {
+                contents = readPDF(file);
+            } else {
+                contents = new Scanner(file).useDelimiter("\\Z").next();
+            }
             System.out.println(this);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String readPDF(File file) throws IOException {
+        Path path = file.toPath(); // Convert File to Path
+        try (PDDocument document = Loader.loadPDF(path.toFile())) {
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            return pdfStripper.getText(document);
         }
     }
 }
@@ -59,8 +73,8 @@ class Document {
 /**
  * This class models a document corpus. Each has a root folder in the filesystem (where the documents reside),
  * and a set that holds these documents.
- * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  *
+ * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
 class DocumentCorpus {
     private String docFolderStr; //the relative path of the folder that stores the documents
@@ -77,6 +91,7 @@ class DocumentCorpus {
 
     /**
      * It sets the roots folder and reads all files
+     *
      * @param docFolder
      */
     public void setDocumentsFolder(String docFolder) {
@@ -98,6 +113,7 @@ class DocumentCorpus {
     /**
      * It recursively reads all files under the root folder
      * and updates the set that holdes these documents
+     *
      * @param folder
      */
     void readAllFiles(File folder) {
@@ -118,8 +134,8 @@ class DocumentCorpus {
 
 /**
  * This class models a toy information retrieval system
- * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  *
+ * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
 
 public class IRSystem {
@@ -131,6 +147,7 @@ public class IRSystem {
 
     /**
      * It receives a query and returns the answer
+     *
      * @param q
      * @return
      */
@@ -195,6 +212,7 @@ public class IRSystem {
 
     /**
      * inverses a map (k1,v1)(k2,v2)(k3,v1) to   (v1,{k1,k3})(v2,{k2})
+     *
      * @param <V>
      * @param <K>
      * @param map
@@ -208,7 +226,6 @@ public class IRSystem {
     }
 
     /**
-     *
      * @param answer
      */
     void showAnswer(Map<Double, List<Document>> answer) {
@@ -234,8 +251,8 @@ public class IRSystem {
 
 /**
  * An example of using the Information Retrieval System
- * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  *
+ * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
 class IRSystemClient {
     public static void main(String[] lala) {

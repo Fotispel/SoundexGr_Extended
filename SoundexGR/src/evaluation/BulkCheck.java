@@ -421,7 +421,13 @@ public class BulkCheck {
         for (Document d : corpus.getDocs()) {
             String docURI = String.valueOf(d.uri);
             String docName = docURI.substring(docURI.lastIndexOf("/") + 1);
-            docName = docName.replace(".txt", "");
+
+            if (docName.endsWith(".txt")) {
+                docName = docName.replace(".txt", "");
+            } else if (docName.endsWith(".pdf")) {
+                docName = docName.replace(".pdf", "");
+
+            }
             DocNames.add(docName);
 
             // Tokenize the document content
