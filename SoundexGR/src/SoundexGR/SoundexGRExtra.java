@@ -622,9 +622,8 @@ public class SoundexGRExtra {
         //System.out.println(" (after remove duplicates)");
         
         //finalResult += "00000000"; 
-        finalResult += "00000000000000000000"; // needed only in the case the lenth of the code is big
-        LengthEncoding = BulkCheck.length_temp;
-        return finalResult.substring(0, LengthEncoding); // 4 letter length encoding
+        finalResult += "00000000000000000000"; // needed only in the case the length of the code is big
+        return finalResult.substring(0, LengthEncoding);
     }
     
 

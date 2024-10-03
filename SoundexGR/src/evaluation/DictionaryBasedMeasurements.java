@@ -59,6 +59,7 @@ public class DictionaryBasedMeasurements {
         placeDict = resourcePlace;
         InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
         try {
+            assert inDict != null;
             readerDict = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -251,11 +252,9 @@ public class DictionaryBasedMeasurements {
 
     public static int calculateSuggestedCodeLen(String word) {
         int wordLen = word.length();
-        int suggestedCodeLen;
-
-        return 0;
-
-
+        int length = Math.round(BulkCheck.overall_code_length_per_word_length[wordLen]);
+        Dashboard.appSoundexCodeLen = length;
+        return length;
     }
 
 
@@ -265,39 +264,39 @@ public class DictionaryBasedMeasurements {
      * @param code
      * @return
      */
-	public static Set<String> returnWordsHavingTheSameCode(String code) {
-		if  (codesToWords==null) { 	// the dictionary has not been processed
-			codesToWords = new HashMap<>(); // the map
-			String line;
+    public static Set<String> returnWordsHavingTheSameCode(String code) {
+        if (codesToWords == null) {    // the dictionary has not been processed
+            codesToWords = new HashMap<>(); // the map
+            String line;
             //System.out.println("\nString code : " + code);
 
-			System.out.println("Starting encoding the dictionary with code length " +SoundexGRExtra.LengthEncoding);
+            System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
 
-			try {
-				InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
-				BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict,"UTF-8"));
+            try {
+                InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
+                BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
 
-				//FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");BufferedReader bfr = new BufferedReader(fl);
-				while ((line = bfr.readLine()) != null) {
-					String      wordEncoded = SoundexGRExtra.encode(line);
-					HashSet wordsWithThatCode = codesToWords.get(wordEncoded);
-					if (wordsWithThatCode==null) { // the code is not in the map
-						wordsWithThatCode = new HashSet();
-						wordsWithThatCode.add(line);
-						codesToWords.put(wordEncoded,wordsWithThatCode);
-					} else {
-						wordsWithThatCode.add(line);
-					}
-				}
-				//bfr.close(); /// TODO to check
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-			//System.out.println(codesToWords);
-			System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
-		}
-		return codesToWords.get(code);
-	}
+                //FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");BufferedReader bfr = new BufferedReader(fl);
+                while ((line = bfr.readLine()) != null) {
+                    String wordEncoded = SoundexGRExtra.encode(line);
+                    HashSet wordsWithThatCode = codesToWords.get(wordEncoded);
+                    if (wordsWithThatCode == null) { // the code is not in the map
+                        wordsWithThatCode = new HashSet();
+                        wordsWithThatCode.add(line);
+                        codesToWords.put(wordEncoded, wordsWithThatCode);
+                    } else {
+                        wordsWithThatCode.add(line);
+                    }
+                }
+                //bfr.close(); /// TODO to check
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            //System.out.println(codesToWords);
+            System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
+        }
+        return codesToWords.get(code);
+    }
 
 
     /**

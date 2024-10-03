@@ -104,10 +104,11 @@ public class BulkCheck {
             int suggested_code_length = -1;
             float max_f_score = -1;
             do {
+                SoundexGRExtra.LengthEncoding = length_temp;
                 float precision_word = -1, recall_word = -1, f_score_word;
                 if (!bounded) { // no bound on number of words
                     LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
-                    ArrayList<String> res = utils.search(tmp2[0].trim(), type); // ...
+                    ArrayList<String> res = utils.search(tmp2[0].trim(), type);
                     precision_word = getPrecision(tmp, res);
                     recall_word = getRecall(tmp, res);
                     total_pre += precision_word; // adding the precision
@@ -123,7 +124,7 @@ public class BulkCheck {
                                 numOfWords++;
                             }
                         }
-                        ArrayList<String> res = utils.search(tmp2[0].trim(), type); // ...
+                        ArrayList<String> res = utils.search(tmp2[0].trim(), type);
 
                         precision_word = getPrecision(tmp, res);
                         recall_word = getRecall(tmp, res);
@@ -141,9 +142,9 @@ public class BulkCheck {
                     suggested_code_length = length_temp;
                     SoundexGRExtra.LengthEncoding = suggested_code_length;
                 }
-
                 length_temp++;
             } while (length_temp < 22);
+            length_temp = suggested_code_length;
             //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
 
             //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
@@ -386,6 +387,7 @@ public class BulkCheck {
 
             for (String docName : DocNames) {
                 String fileName = "Resources//collection_words//" + docName + "_words.txt";
+                String fileName_all_words = "Resources//collection_words//collection_all_words.dic";
                 FileWriter fr = new FileWriter(fileName);
                 BufferedWriter br = new BufferedWriter(fr);
 
@@ -394,6 +396,14 @@ public class BulkCheck {
                     br.write(word + "\n");
                 }
 
+                FileWriter fr_all = new FileWriter(fileName_all_words, true);
+                BufferedWriter br_all = new BufferedWriter(fr_all);
+                for (String word : words) {
+                    br_all.write(word + "\n");
+                }
+
+                br_all.close();
+                fr_all.close();
                 br.close();
                 fr.close();
             }
@@ -403,17 +413,11 @@ public class BulkCheck {
         }
     }
 
-    public static void print_fscores() {
-        Utilities utils = new Utilities();
-        BulkCheck bulkCheckRun = new BulkCheck();
-
+    private static ArrayList<String> Read_and_Write_to_file() {
+        ArrayList<String> DocNames = new ArrayList<>();
         List<String> tokensOfDoc = null;
         Map<String, List<String>> allTokensByDoc = new HashMap<>();  // To store tokens per document
         Map<String, Set<String>> allWordsByDoc = new HashMap<>();
-        Set<String> commonwords = null;
-        Map<Document, Double> scores = new HashMap<Document, Double>();
-        ArrayList<String> DocNames = new ArrayList<>();
-
         IRSystem irs = new IRSystem();
         DocumentCorpus corpus = new DocumentCorpus("Resources//collection");
         irs.setCorpus(corpus);
@@ -441,8 +445,19 @@ public class BulkCheck {
         }
 
         write_wordsOfDoc_to_files(allWordsByDoc, DocNames);
+        return DocNames;
+    }
 
+    public static void print_fscores() {
+        Utilities utils = new Utilities();
+        BulkCheck bulkCheckRun = new BulkCheck();
+
+        Set<String> commonwords = null;
+        Map<Document, Double> scores = new HashMap<Document, Double>();
         List<String> datasetFileList = new ArrayList<>();
+
+        ArrayList<String> DocNames = Read_and_Write_to_file();
+
         for (String docName : DocNames) {
             datasetFileList.add(String.format("Resources//collection_words//%s_words.txt", docName));  // Add each path to the list
         }
@@ -464,11 +479,10 @@ public class BulkCheck {
                     }
                     output += "\n";
                 }
-                utils.writeToFile(output,"Resources//collection_words_misspellings//misspellings_" + datasetFile.substring(datasetFile.lastIndexOf("/") + 1));
+                utils.writeToFile(output, "Resources//collection_words_misspellings//misspellings_" + datasetFile.substring(datasetFile.lastIndexOf("/") + 1));
             }
 
-            for (int j=0; j< DatasetFiles.length;j++)
-            {
+            for (int j = 0; j < DatasetFiles.length; j++) {
                 DatasetFiles[j] = "Resources//collection_words_misspellings//misspellings_" + DatasetFiles[j].substring(DatasetFiles[j].lastIndexOf("/") + 1);
             }
 
