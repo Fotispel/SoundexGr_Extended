@@ -78,7 +78,7 @@ public class BulkCheck {
      * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
      */
     public void check(Utilities utils, String path, String type, String fileToWrite, int maxWordNum) throws FileNotFoundException, IOException {
-        int[][] matching_word_and_code_length = new int[5000][2]; // for storing the matching word and code length
+        int[][] matching_word_and_code_length = new int[5000][2]; //matching_word_and_code_length is an array that stores the matching word and the suggested code length
         int counter_for_matching_word_and_code_length = 0; // counter for the above array
 
         boolean bounded = maxWordNum != 0;  // true if the max num of words should be applied
@@ -136,6 +136,13 @@ public class BulkCheck {
                     }
                 }
                 f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
+
+                /*
+                if (tmp2[0].equals("κατά")) {
+                    System.out.println("F-score: " + f_score_word + " for word: " + tmp2[0] + " with code length: " + length_temp);
+                }
+                 */
+
                 if (f_score_word > max_f_score) {
                     //System.out.println("F-score: " + f_score_word + " for word: " + tmp2[0] + " with code length: " + length_temp);
                     max_f_score = f_score_word;
@@ -147,7 +154,6 @@ public class BulkCheck {
             length_temp = suggested_code_length;
             //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
 
-            //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
             matching_word_and_code_length[counter_for_matching_word_and_code_length][0] = tmp2[0].length(); // Length of the word
             matching_word_and_code_length[counter_for_matching_word_and_code_length][1] = suggested_code_length; // Suggested code length for the word
             counter_for_matching_word_and_code_length++;
@@ -161,9 +167,7 @@ public class BulkCheck {
             sum_code_length_per_word_length[matching_word_and_code_length[i][0]] += matching_word_and_code_length[i][1];
         }
         float[] avg_code_length_per_word_length = new float[23];
-        for (int i = 0; i < avg_code_length_per_word_length.length; i++) {
-            avg_code_length_per_word_length[i] = 0;
-        }
+
         for (int i = 2; i < 22; i++) {
             //System.out.println("Sum word length: " + sum_word_length_per_code_length[i] + " Count words: " + count_words_per_code_length[i]);
             if (count_code_lengths_per_word_length[i] > 0) {
