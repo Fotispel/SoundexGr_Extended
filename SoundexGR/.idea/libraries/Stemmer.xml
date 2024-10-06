@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Stemmer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/mitos/stemmer/Stemmer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
