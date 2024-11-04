@@ -17,6 +17,8 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
 
+import static evaluation.BulkCheck.*;
+
 public class Dashboard extends JFrame {
     AppController apCtlr;
 
@@ -33,7 +35,6 @@ public class Dashboard extends JFrame {
     static JButton dictionaryLookupB;
     static JButton produceErrosB;
 
-    static JLabel codeLengthB;
     static JComboBox codeLenghtsC;
 
 
@@ -45,6 +46,8 @@ public class Dashboard extends JFrame {
     static Font appButtonfont = new Font("serif", Font.PLAIN, 18);
 
     public static int appSoundexCodeLen = 6;
+
+    private static String selectedDatasetFile;
 
     /**
      * @return the appSoundexCodeLen
@@ -64,6 +67,17 @@ public class Dashboard extends JFrame {
     }
 
     static void loadOrRefreshDictionary() {
+        for (String docName : DocNames) {
+            datasetFileWords.add(String.format("Resources//collection_words//%s_words.txt", docName));  // Add each path to the list
+        }
+        DatasetFiles = new String[DocNames.size()];
+        for (int i = 0; i < DocNames.size(); i++) {
+            DatasetFiles[i] = String.format("Resources//collection_words//%s.txt", DocNames.get(i));  // Add formatted path
+            System.out.println(DatasetFiles[i]);
+        }
+
+        setSelectedDatasetFile(DocNames.get(0));
+
         BulkCheck.print_fscores();
 
         //Loading the dictionary (one getMatching initiates its loading)
@@ -71,6 +85,14 @@ public class Dashboard extends JFrame {
             DictionaryMatcher.getMatchings("αυγόβββ", Dashboard.getAppSoundexCodeLen());
             System.out.println("Dictionary loaded/refreshed.");
         }).start();
+    }
+
+    public static String getSelectedDatasetFile() {
+        return selectedDatasetFile;
+    }
+
+    public static void setSelectedDatasetFile(String selectedDatasetFile) {
+        Dashboard.selectedDatasetFile = selectedDatasetFile;
     }
 
     /**
@@ -106,7 +128,7 @@ public class Dashboard extends JFrame {
         //this.setJMenuBar(appMenu.createMenuBar());
 
         // GUI PART: size, layout, title
-        setBounds(80, 80, 1200, 550);  //x,  y,  width,  height)
+        setBounds(80, 80, 1200, 800);  //x,  y,  width,  height)
         setLayout(new GridLayout(0, 2, 5, 5)); // rows, columns, int hgap, int vgap)
         //setLayout(new FlowLayout()); // rows, columns, int hgap, int vgap)
 
@@ -124,6 +146,7 @@ public class Dashboard extends JFrame {
         add(generalInputPanel);
 
         createInput(generalInputPanel);
+        createDatasetFilesSelection(generalInputPanel);
         createPhonemicOperators(generalInputPanel);
         createMatchingOperators(generalInputPanel);
         createGeneralOperators(generalInputPanel);
@@ -378,6 +401,55 @@ public class Dashboard extends JFrame {
         }
     }
 
+    /**
+     * Creates the combo box for selecting dataset files.
+     */
+    void createDatasetFilesSelection(JPanel parentPanel) {
+        // Panel for dataset files selection
+        JPanel datasetPanel = new JPanel(new FlowLayout()); // rows, columns, int hgap, int vgap)
+        datasetPanel.setBackground(ColorMgr.colorBackground);
+
+        datasetPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Select Dataset Files"));
+
+        // Label for the combo box
+        JLabel datasetLabel = new JLabel("Dataset:");
+
+        // JComboBox for selecting dataset files
+        String[] docNames = new String[DatasetFiles.length];
+        for (int i = 0; i < DatasetFiles.length; i++) {
+            int index = DatasetFiles[i].lastIndexOf("/");
+            String name = DatasetFiles[i].substring(index + 1);
+
+            index = name.lastIndexOf(".");
+            name = name.substring(0, index);
+            docNames[i] = name;
+        }
+
+        JComboBox<String> datasetComboBox = new JComboBox<>(docNames);
+
+        // Add ActionListener to the combo box
+        datasetComboBox.addActionListener(e -> {
+            selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
+            System.out.println("Selected Dataset File: " + selectedDatasetFile); // For debugging
+        });
+
+        // Set font for combo box and label
+        datasetLabel.setFont(appButtonfont);
+        datasetComboBox.setFont(appButtonfont);
+
+        // Add components to the panel
+        datasetPanel.add(datasetLabel);
+        datasetPanel.add(datasetComboBox);
+
+        // Add the panel to the parent panel or frame
+        if (parentPanel == null) {
+            this.add(datasetPanel); // adds to Frame
+        } else {
+            parentPanel.add(datasetPanel);
+        }
+    }
+
 
     /**
      * Creates the buttons for the phonemic operators
@@ -391,19 +463,14 @@ public class Dashboard extends JFrame {
                 BorderFactory.createEtchedBorder(), "Phonemic Operations"));
 
 
-        codeLengthB = new JLabel("Code length:");
         soundexB = new JButton("SoundexGR"); //soundex
         soundexNaiveB = new JButton("SoundexGRNaive"); //soundexNaive
         pnoneticB = new JButton("Phonemic"); //phonetic
         applyAllB = new JButton("APPLY ALL"); //apply all
 
-        codeLenghtsC = new JComboBox(new String[]{"3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"});
-        codeLenghtsC.setSelectedIndex((int) (3 + Math.log(appSoundexCodeLen) / Math.log(10)));
-        codeLenghtsC.addActionListener(this.apCtlr);
 
         // Array with all buttons
         JButton[] allButtons = {
-                //codeLengthB,
                 soundexB,
                 soundexNaiveB,
                 pnoneticB,
@@ -423,11 +490,6 @@ public class Dashboard extends JFrame {
             b.setFont(appButtonfont);
             b.setBackground(ColorMgr.colorButtonPhone);
         }
-        codeLengthB.setFont(appButtonfont);
-        codeLenghtsC.setFont(appButtonfont);
-        //add the rest
-        operatorPanel.add(codeLengthB);
-        operatorPanel.add(codeLenghtsC);
         // adds the panel to Frame
 
         //operatorPanel.setSize(200, 100); // lala

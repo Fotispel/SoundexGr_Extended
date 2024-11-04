@@ -25,8 +25,10 @@ import javax.print.Doc;
  */
 
 public class BulkCheck {
-    public static int length_temp = 0;
-    public static float[] overall_code_length_per_word_length = new float[22];
+    public static String[] DatasetFiles;
+    public static ArrayList<String> DocNames = Read_and_Write_to_file();
+    public static List<String> datasetFileWords = new ArrayList<>();
+
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
 
@@ -77,34 +79,42 @@ public class BulkCheck {
      * @throws FileNotFoundException
      * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
      */
-    public void check(Utilities utils, String path, String type, String fileToWrite, int maxWordNum) throws FileNotFoundException, IOException {
-        int[][] matching_word_and_code_length = new int[5000][2]; //matching_word_and_code_length is an array that stores the matching word and the suggested code length
-        int counter_for_matching_word_and_code_length = 0; // counter for the above array
-
+    public void check(Utilities utils, String path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
         boolean bounded = maxWordNum != 0;  // true if the max num of words should be applied
 
-        FileReader fl = new FileReader(path);
-        BufferedReader bfr = new BufferedReader(fl);
         String line;
 
         //FileWriter fr = new FileWriter(fileToWrite); // opens the file to write  (currently does not write anything)
         float total_pre = 0; // initialization of total precision
         float total_rec = 0; // initialization of total recall
         int counter = 0; // counts the number of buckets (i.e. the number of lines in the file)
+        int counter_words = 0; // counts the number of words
 
-        int numOfWords = 0; // ytz: 2021 for counting the words
-
-        // reading the eval collection
+        float max_f_score = -1;
+        int length_for_max_f_score = -1;
         long start = System.nanoTime();
+        int length_for_testing = 2;
+        int numOfWords = 0; // ytz: 2021 for counting the words
+        for (length_for_testing = 1; length_for_testing <= 15; length_for_testing++) {
+            //System.out.println("Length for testing: " + length_for_testing);
+            // reading the eval collection
+            SoundexGRExtra.LengthEncoding = length_for_testing;
+            counter_words = 0;
 
-        while ((line = bfr.readLine()) != null) {
-            length_temp = 1;
+            float avg_f_score = 0;
 
-            String[] tmp2 = line.split(","); // reading the tokens of a line
-            int suggested_code_length = -1;
-            float max_f_score = -1;
-            do {
-                SoundexGRExtra.LengthEncoding = length_temp;
+            FileReader fl = new FileReader(path);
+            BufferedReader bfr = new BufferedReader(fl);
+
+            while ((line = bfr.readLine()) != null) {
+                if (line.length() < 3) {
+                    continue;
+                }
+
+                counter_words++;
+
+                String[] tmp2 = line.split(","); // reading the tokens of a line
+
                 float precision_word = -1, recall_word = -1, f_score_word;
                 if (!bounded) { // no bound on number of words
                     LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
@@ -136,49 +146,24 @@ public class BulkCheck {
                     }
                 }
                 f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
-
-                /*
-                if (tmp2[0].equals("κατά")) {
-                    System.out.println("F-score: " + f_score_word + " for word: " + tmp2[0] + " with code length: " + length_temp);
-                }
-                 */
-
-                if (f_score_word > max_f_score) {
-                    //System.out.println("F-score: " + f_score_word + " for word: " + tmp2[0] + " with code length: " + length_temp);
-                    max_f_score = f_score_word;
-                    suggested_code_length = length_temp;
-                    SoundexGRExtra.LengthEncoding = suggested_code_length;
-                }
-                length_temp++;
-            } while (length_temp < 22);
-            length_temp = suggested_code_length;
-            //System.out.println("Suggested code length: " + suggested_code_length + " F-score: " + max_f_score + " for word: " + tmp2[0]);
-
-            matching_word_and_code_length[counter_for_matching_word_and_code_length][0] = tmp2[0].length(); // Length of the word
-            matching_word_and_code_length[counter_for_matching_word_and_code_length][1] = suggested_code_length; // Suggested code length for the word
-            counter_for_matching_word_and_code_length++;
-        }
-
-        int[] count_code_lengths_per_word_length = new int[23]; // for counting the number of words per code length
-        int[] sum_code_length_per_word_length = new int[23]; // for summing the word length per code length
-        for (int i = 0; i < counter_for_matching_word_and_code_length; i++) {
-            //System.out.println("Word length: " + matching_word_and_code_length[i][0] + " Suggested code length: " + matching_word_and_code_length[i][1]);
-            count_code_lengths_per_word_length[matching_word_and_code_length[i][0]]++;
-            sum_code_length_per_word_length[matching_word_and_code_length[i][0]] += matching_word_and_code_length[i][1];
-        }
-        float[] avg_code_length_per_word_length = new float[23];
-
-        for (int i = 2; i < 22; i++) {
-            //System.out.println("Sum word length: " + sum_word_length_per_code_length[i] + " Count words: " + count_words_per_code_length[i]);
-            if (count_code_lengths_per_word_length[i] > 0) {
-                avg_code_length_per_word_length[i] = (float) sum_code_length_per_word_length[i] / count_code_lengths_per_word_length[i];
-            } else {
-                avg_code_length_per_word_length[i] = 0;
+                avg_f_score += f_score_word;
             }
-            overall_code_length_per_word_length[i] += avg_code_length_per_word_length[i];
-            System.out.println("Word length: " + i + " Avg code length: " + avg_code_length_per_word_length[i]);
+            bfr.close();
 
+            if (counter_words == 0) {
+                throw new RuntimeException("No words in the given document with length >=3");
+            } else {
+                avg_f_score /= counter_words;
+            }
+
+            if (avg_f_score > max_f_score) {
+                max_f_score = avg_f_score;
+                length_for_max_f_score = length_for_testing;
+            }
         }
+
+        System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words\n");
+
 
         long end = System.nanoTime();
         long total = end - start;
@@ -326,7 +311,7 @@ public class BulkCheck {
                                     datasetFile.substring(datasetFile.lastIndexOf('/') + 1); // the prefix + the last part of the dataset filename
 
                     //System.out.println(">>>>>"+outputFileName);
-                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum);
+                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum, 0);
                     System.out.println(""); //-------------------------------------------------");
                 }
                 utils.clear();
@@ -355,13 +340,13 @@ public class BulkCheck {
             mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
         }
 
-        String DatasetFiles[] = {
+        DatasetFiles = new String[]{
                 "Resources/names/additions.txt",        // additions
                 "Resources/names/subs.txt",            // subtitutions
                 "Resources/names/deletions.txt",        // deletions
                 "Resources/names/same_sounded.txt",        // same sounded
                 "Resources/names/same_soundedExtended.txt"        // same sounded (more)
-        };  // evaluation collections
+        };
 
         String OptionsToEvaluate[] = {"stemcase"};
         String outputFile = "Resources/names/results/sames-stemmer.txt";   // file for writing
@@ -372,7 +357,7 @@ public class BulkCheck {
                 System.out.println("[" + datasetFile + "]");
                 for (String optionToEvaluate : OptionsToEvaluate) { // for each code generation option
                     System.out.println("Results  over " + datasetFile + " with the option *" + optionToEvaluate + "*:");
-                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFile, 0);
+                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFile, 0, 0);
                     System.out.println("-------------------------------------------------");
                 }
                 utils.clear();
@@ -458,20 +443,14 @@ public class BulkCheck {
 
         Set<String> commonwords = null;
         Map<Document, Double> scores = new HashMap<Document, Double>();
-        List<String> datasetFileList = new ArrayList<>();
-
-        ArrayList<String> DocNames = Read_and_Write_to_file();
-
-        for (String docName : DocNames) {
-            datasetFileList.add(String.format("Resources//collection_words//%s_words.txt", docName));  // Add each path to the list
-        }
-        String[] DatasetFiles = datasetFileList.toArray(new String[0]);
 
         int number_of_datasets = DatasetFiles.length;
+        int file_index = 0;
+
         try {
-            for (String datasetFile : DatasetFiles) {
-                utils.readFile(datasetFile);
-                String input = utils.getContents(datasetFile);
+            for (String FileWords : datasetFileWords) {
+                utils.readFile(FileWords);
+                String input = utils.getContents(FileWords);
                 ArrayList<String> tokens = Tokenizer.getTokens(input);
 
                 String output = "";
@@ -483,25 +462,23 @@ public class BulkCheck {
                     }
                     output += "\n";
                 }
-                utils.writeToFile(output, "Resources//collection_words_misspellings//misspellings_" + datasetFile.substring(datasetFile.lastIndexOf("/") + 1));
+                utils.writeToFile(output, "Resources//collection_words_misspellings//misspellings_" + FileWords.substring(FileWords.lastIndexOf("/") + 1));
             }
+
+            ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
 
             for (int j = 0; j < DatasetFiles.length; j++) {
-                DatasetFiles[j] = "Resources//collection_words_misspellings//misspellings_" + DatasetFiles[j].substring(DatasetFiles[j].lastIndexOf("/") + 1);
-            }
+                String misspellingFile = "Resources//collection_words_misspellings//misspellings_" + datasetFileWords.get(j).substring(datasetFileWords.get(j).lastIndexOf("/") + 1);
 
-            for (String datasetFile : DatasetFiles) {
-                utils.readFile(datasetFile);
-                System.out.print("\n[" + datasetFile + "]\n");
-                bulkCheckRun.check(utils, datasetFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
+                DatasetFiles_Misspellings.add(misspellingFile);  // Add the misspelling file to the ArrayList
+
+                System.out.print("\n[" + DatasetFiles[j] + "]: ");
+                utils.readFile(DatasetFiles_Misspellings.get(j));  // Retrieve the file at index j
+                bulkCheckRun.check(utils, DatasetFiles_Misspellings.get(j), "soundex", "Resources/names/results/sames-soundex.txt", 0, file_index);
+                file_index++;
                 utils.clear();
             }
 
-            System.out.println("\n\nOverall code length per word length:");
-            for (int i = 2; i < 22; i++) {
-                overall_code_length_per_word_length[i] /= number_of_datasets;
-                System.out.println("Word length: " + i + " Avg code length: " + overall_code_length_per_word_length[i]);
-            }
         } catch (IOException ex) {
             System.out.println(ex);
             Logger.getLogger(BulkCheck.class.getName()).log(Level.SEVERE, null, ex);

@@ -251,10 +251,27 @@ public class DictionaryBasedMeasurements {
 
 
     public static int calculateSuggestedCodeLen(String word) {
-        int wordLen = word.length();
-        int length = Math.round(BulkCheck.overall_code_length_per_word_length[wordLen]);
-        Dashboard.appSoundexCodeLen = length;
-        return length;
+        int File_index = -1;
+
+        // Search for the selected dataset file in the datasetFileList
+        for (int i = 0; i < BulkCheck.DatasetFiles.length; i++) {
+            System.out.println("Selected Dataset File: " + Dashboard.getSelectedDatasetFile());
+            if (BulkCheck.DatasetFiles[i].endsWith(Dashboard.getSelectedDatasetFile() + ".txt")) {
+                File_index = i;
+                break;
+            }
+        }
+
+        // If the file index was found, calculate the length
+        if (File_index != -1) {
+            int length = 3;
+            Dashboard.appSoundexCodeLen = length; // Set length
+            return length;
+        } else {
+            // Handle the case where the selected file was not found
+            System.err.println("File not found: " + Dashboard.getSelectedDatasetFile());
+            return -1; // or some default value
+        }
     }
 
 
