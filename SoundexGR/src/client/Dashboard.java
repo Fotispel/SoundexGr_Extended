@@ -431,7 +431,9 @@ public class Dashboard extends JFrame {
         // Add ActionListener to the combo box
         datasetComboBox.addActionListener(e -> {
             selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
-            System.out.println("Selected Dataset File: " + selectedDatasetFile); // For debugging
+            SoundexGRExtra.LengthEncoding = length_per_DocName.get(selectedDatasetFile);
+            appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
+            System.out.println("Optimal length " + appSoundexCodeLen + " for dataset " + selectedDatasetFile);
         });
 
         // Set font for combo box and label

@@ -24,6 +24,8 @@ import SoundexGR.SoundexGRExtra;
 import stemmerWrapper.StemmerWrapper;
 import evaluation.BulkCheck.*;
 
+import static evaluation.BulkCheck.length_per_DocName;
+
 /**
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  * <p>
@@ -264,7 +266,7 @@ public class DictionaryBasedMeasurements {
 
         // If the file index was found, calculate the length
         if (File_index != -1) {
-            int length = 3;
+            int length =  length_per_DocName.get(Dashboard.getSelectedDatasetFile());
             Dashboard.appSoundexCodeLen = length; // Set length
             return length;
         } else {

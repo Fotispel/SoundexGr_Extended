@@ -29,6 +29,10 @@ public class BulkCheck {
     public static ArrayList<String> DocNames = Read_and_Write_to_file();
     public static List<String> datasetFileWords = new ArrayList<>();
 
+    public static ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
+
+    public static Map<String,Integer> length_per_DocName = new HashMap<>();
+
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
 
@@ -162,7 +166,8 @@ public class BulkCheck {
             }
         }
 
-        System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words\n");
+        System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
+        length_per_DocName.put(DocNames.get(file_index), length_for_max_f_score);
 
 
         long end = System.nanoTime();
@@ -453,21 +458,42 @@ public class BulkCheck {
                 String input = utils.getContents(FileWords);
                 ArrayList<String> tokens = Tokenizer.getTokens(input);
 
-                String output = "";
+                StringBuilder output = new StringBuilder();
                 for (String token : tokens) {
-                    output += token + "";
+                    // Remove parentheses and brackets
+                    if (token.startsWith("(") || token.startsWith("[")) {
+                        token = token.substring(1);
+                    }
+                    if (token.endsWith(")") || token.endsWith("]")) {
+                        token = token.substring(0, token.length() - 1);
+                    }
+
+                    // Remove commas and periods
+                    if (token.endsWith(",") || token.endsWith(".")) {
+                        token = token.substring(0, token.length() - 1);
+                    }
+
+                    // Skip numbers
+                    if (token.matches("[0-9]+")) {
+                        continue;
+                    }
+
+                    if (token.length() < 3) {
+                        continue;
+                    }
+
+                    output.append(token);
                     for (String errorStr : DictionaryBasedMeasurements.returnVariations(token)) {
-                        output += ", " + errorStr;
+                        output.append(", ").append(errorStr);
                         //System.out.println(output);
                     }
-                    output += "\n";
+                    output.append("\n");
                 }
-                utils.writeToFile(output, "Resources//collection_words_misspellings//misspellings_" + FileWords.substring(FileWords.lastIndexOf("/") + 1));
+                utils.writeToFile(output.toString(), "Resources//collection_words_misspellings//misspellings_" + FileWords.substring(FileWords.lastIndexOf("/") + 1));
             }
 
-            ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
 
-            for (int j = 0; j < DatasetFiles.length; j++) {
+            for (int j = 0; j < number_of_datasets; j++) {
                 String misspellingFile = "Resources//collection_words_misspellings//misspellings_" + datasetFileWords.get(j).substring(datasetFileWords.get(j).lastIndexOf("/") + 1);
 
                 DatasetFiles_Misspellings.add(misspellingFile);  // Add the misspelling file to the ArrayList

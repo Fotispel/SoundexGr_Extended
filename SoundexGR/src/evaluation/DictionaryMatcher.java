@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import client.Dashboard;
 import utils.*;
 
 import SoundexGR.SoundexGRExtra;
@@ -90,7 +91,7 @@ public class DictionaryMatcher {
      */
 
     public static String getMatchings(String word, int codeLength) {
-        String dictResourcePlace = "/collection_words/collection_all_words.dic";
+        String dictResourcePlace = "/collection_words/" + Dashboard.getSelectedDatasetFile() + "_words.txt";
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
