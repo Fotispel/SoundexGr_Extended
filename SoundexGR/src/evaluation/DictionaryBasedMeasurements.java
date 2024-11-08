@@ -227,31 +227,31 @@ public class DictionaryBasedMeasurements {
      * @return
      */
     public static boolean lookup(String word) {
-        if (wordsSet == null) { // if the dictionary has not been processed
-            wordsSet = new HashSet<>(); // for keeping the words of the dictionary
-            String line;
+        wordsSet = new HashSet<>(); // for keeping the words of the dictionary
+        String line;
 
-            try {
-                // Use FileInputStream for local file system path
-                FileInputStream inDict = new FileInputStream(placeDict); // This is for local file paths
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+        try {
+            // Use FileInputStream for local file system path
+            System.out.println("Place of the dictionary: " + placeDict);
+            FileInputStream inDict = new FileInputStream(placeDict); // This is for local file paths
+            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
 
-                while ((line = bfr.readLine()) != null) {
-                    wordsSet.add(line);
-                }
-
-                // Closing the BufferedReader
-                bfr.close();
-
-            } catch (FileNotFoundException e) {
-                System.out.println("File not found at path: " + placeDict);
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("Error reading file: " + e);
-                e.printStackTrace();
+            while ((line = bfr.readLine()) != null) {
+                wordsSet.add(line);
             }
-            System.out.println("Dictionary loaded, number of words = " + wordsSet.size());
+
+            // Closing the BufferedReader
+            bfr.close();
+
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found at path: " + placeDict);
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Error reading file: " + e);
+            e.printStackTrace();
         }
+        System.out.println("After ");
+        System.out.println("Dictionary loaded, number of words = " + wordsSet.size());
 
         return wordsSet.contains(word);
     }

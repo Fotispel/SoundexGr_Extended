@@ -3,6 +3,7 @@ package client;
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
 import evaluation.BulkCheck;
+import evaluation.DictionaryBasedMeasurements;
 import evaluation.DictionaryMatcher;
 
 import javax.swing.*;

@@ -31,7 +31,7 @@ public class BulkCheck {
 
     public static ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
 
-    public static Map<String,Integer> length_per_DocName = new HashMap<>();
+    public static Map<String, Integer> length_per_DocName = new HashMap<>();
 
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
@@ -385,14 +385,39 @@ public class BulkCheck {
                 FileWriter fr = new FileWriter(fileName);
                 BufferedWriter br = new BufferedWriter(fr);
 
-                Set<String> words = allWordsByDoc.get(docName);
-                for (String word : words) {
-                    br.write(word + "\n");
-                }
-
                 FileWriter fr_all = new FileWriter(fileName_all_words, true);
                 BufferedWriter br_all = new BufferedWriter(fr_all);
+
+
+                Set<String> words = allWordsByDoc.get(docName);
                 for (String word : words) {
+                    // Remove parentheses and brackets
+                    if (word.startsWith("(") || word.startsWith("[")) {
+                        word = word.substring(1);
+                    }
+                    if (word.endsWith(")") || word.endsWith("]")) {
+                        word = word.substring(0, word.length() - 1);
+                    }
+
+                    // Remove commas and periods
+                    if (word.endsWith(",") || word.endsWith(".")) {
+                        word = word.substring(0, word.length() - 1);
+                    }
+
+                    // Skip numbers
+                    if (word.matches("[0-9]+")) {
+                        continue;
+                    }
+
+                    //Skip non-Greek words
+                    if (!word.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
+                        continue;
+                    }
+
+                    if (word.length() < 3) {
+                        continue;
+                    }
+                    br.write(word + "\n");
                     br_all.write(word + "\n");
                 }
 
@@ -460,32 +485,6 @@ public class BulkCheck {
 
                 StringBuilder output = new StringBuilder();
                 for (String token : tokens) {
-                    // Remove parentheses and brackets
-                    if (token.startsWith("(") || token.startsWith("[")) {
-                        token = token.substring(1);
-                    }
-                    if (token.endsWith(")") || token.endsWith("]")) {
-                        token = token.substring(0, token.length() - 1);
-                    }
-
-                    // Remove commas and periods
-                    if (token.endsWith(",") || token.endsWith(".")) {
-                        token = token.substring(0, token.length() - 1);
-                    }
-
-                    // Skip numbers
-                    if (token.matches("[0-9]+")) {
-                        continue;
-                    }
-
-                    //Skip non-Greek words
-                    if (!token.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
-                        continue;
-                    }
-
-                    if (token.length() < 3) {
-                        continue;
-                    }
 
                     output.append(token);
                     for (String errorStr : DictionaryBasedMeasurements.returnVariations(token)) {
