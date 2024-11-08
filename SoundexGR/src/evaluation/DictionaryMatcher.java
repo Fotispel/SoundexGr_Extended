@@ -91,7 +91,8 @@ public class DictionaryMatcher {
      */
 
     public static String getMatchings(String word, int codeLength) {
-        String dictResourcePlace = "/collection_words/" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+        String currentDir = System.getProperty("user.dir");
+        String dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 

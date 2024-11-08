@@ -5,12 +5,7 @@ package evaluation;
 
 import client.Dashboard;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,12 +52,14 @@ public class DictionaryBasedMeasurements {
      *
      * @param resourcePlace the resource place
      */
-    static public void setDictionaryLocation(String resourcePlace) {
+    public static void setDictionaryLocation(String resourcePlace) {
         placeDict = resourcePlace;
-        InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
         try {
-            assert inDict != null;
+            FileInputStream inDict = new FileInputStream(placeDict);
             readerDict = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+        } catch (FileNotFoundException e) {
+            System.err.println("Error: Dictionary file not found at " + placeDict);
+            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -230,24 +227,32 @@ public class DictionaryBasedMeasurements {
      * @return
      */
     public static boolean lookup(String word) {
-
         if (wordsSet == null) { // if the dictionary has not been processed
             wordsSet = new HashSet<>(); // for keeping the words of the dictionary
             String line;
+
             try {
-                InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
+                // Use FileInputStream for local file system path
+                FileInputStream inDict = new FileInputStream(placeDict); // This is for local file paths
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
-                //	FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");	BufferedReader bfr = new BufferedReader(fl);
+
                 while ((line = bfr.readLine()) != null) {
                     wordsSet.add(line);
                 }
-                //bfr.close(); // TODO to check if ok
-            } catch (Exception e) {
-                System.out.println(e);
+
+                // Closing the BufferedReader
+                bfr.close();
+
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found at path: " + placeDict);
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("Error reading file: " + e);
+                e.printStackTrace();
             }
-            //System.out.println(codesToWords);
-            //System.out.println("Dictionary was read, number of keys = " + codesToWords.keySet().size());
+            System.out.println("Dictionary loaded, number of words = " + wordsSet.size());
         }
+
         return wordsSet.contains(word);
     }
 
@@ -266,7 +271,7 @@ public class DictionaryBasedMeasurements {
 
         // If the file index was found, calculate the length
         if (File_index != -1) {
-            int length =  length_per_DocName.get(Dashboard.getSelectedDatasetFile());
+            int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
             Dashboard.appSoundexCodeLen = length; // Set length
             return length;
         } else {
@@ -287,31 +292,30 @@ public class DictionaryBasedMeasurements {
         if (codesToWords == null) {    // the dictionary has not been processed
             codesToWords = new HashMap<>(); // the map
             String line;
-            //System.out.println("\nString code : " + code);
 
             System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
 
             try {
-                InputStream inDict = DictionaryBasedMeasurements.class.getResourceAsStream(placeDict);
+                // Use FileInputStream instead of getResourceAsStream
+                FileInputStream inDict = new FileInputStream(placeDict);
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
 
-                //FileReader fl = new FileReader("Resources/dictionaries/EN-winedt/gr.dic");BufferedReader bfr = new BufferedReader(fl);
                 while ((line = bfr.readLine()) != null) {
                     String wordEncoded = SoundexGRExtra.encode(line);
-                    HashSet wordsWithThatCode = codesToWords.get(wordEncoded);
+                    HashSet<String> wordsWithThatCode = codesToWords.get(wordEncoded);
                     if (wordsWithThatCode == null) { // the code is not in the map
-                        wordsWithThatCode = new HashSet();
+                        wordsWithThatCode = new HashSet<>();
                         wordsWithThatCode.add(line);
                         codesToWords.put(wordEncoded, wordsWithThatCode);
                     } else {
                         wordsWithThatCode.add(line);
                     }
                 }
-                //bfr.close(); /// TODO to check
+                bfr.close(); // Close BufferedReader after reading the file
             } catch (Exception e) {
                 System.out.println(e);
             }
-            //System.out.println(codesToWords);
+
             System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
         }
         return codesToWords.get(code);

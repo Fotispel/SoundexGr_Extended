@@ -478,6 +478,11 @@ public class BulkCheck {
                         continue;
                     }
 
+                    //Skip non-Greek words
+                    if (!token.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
+                        continue;
+                    }
+
                     if (token.length() < 3) {
                         continue;
                     }

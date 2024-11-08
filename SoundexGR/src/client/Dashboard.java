@@ -72,7 +72,7 @@ public class Dashboard extends JFrame {
         }
         DatasetFiles = new String[DocNames.size()];
         for (int i = 0; i < DocNames.size(); i++) {
-            DatasetFiles[i] = String.format("Resources//collection_words//%s.txt", DocNames.get(i));  // Add formatted path
+            DatasetFiles[i] = String.format("Resources//collection//%s.txt", DocNames.get(i));  // Add formatted path
             System.out.println(DatasetFiles[i]);
         }
 
