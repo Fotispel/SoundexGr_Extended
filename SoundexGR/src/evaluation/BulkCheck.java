@@ -99,7 +99,8 @@ public class BulkCheck {
         long start = System.nanoTime();
         int length_for_testing = 2;
         int numOfWords = 0; // ytz: 2021 for counting the words
-        for (length_for_testing = 1; length_for_testing <= 15; length_for_testing++) {
+        for (length_for_testing = 5; length_for_testing <= 20; length_for_testing++) {
+            System.out.println("Testing length: " + length_for_testing);
             //System.out.println("Length for testing: " + length_for_testing);
             // reading the eval collection
             SoundexGRExtra.LengthEncoding = length_for_testing;
@@ -174,6 +175,7 @@ public class BulkCheck {
         long total = end - start;
 
         double elapsedTime = (double) total / 1000 * 1000 * 1000;
+        System.out.println("Elapsed time: " + elapsedTime);
         float avgPrecision = total_pre / counter;    // computing the avg precision
         float avgRecall = total_rec / counter;        // computing the avg recall
         float avgFmeasure = 2 * (total_pre / counter) * (total_rec / counter) / ((total_pre / counter) + (total_rec / counter));

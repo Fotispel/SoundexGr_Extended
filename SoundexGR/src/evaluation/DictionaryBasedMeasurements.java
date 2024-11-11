@@ -232,7 +232,6 @@ public class DictionaryBasedMeasurements {
 
         try {
             // Use FileInputStream for local file system path
-            System.out.println("Place of the dictionary: " + placeDict);
             FileInputStream inDict = new FileInputStream(placeDict); // This is for local file paths
             BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
 
@@ -250,8 +249,6 @@ public class DictionaryBasedMeasurements {
             System.out.println("Error reading file: " + e);
             e.printStackTrace();
         }
-        System.out.println("After ");
-        System.out.println("Dictionary loaded, number of words = " + wordsSet.size());
 
         return wordsSet.contains(word);
     }
