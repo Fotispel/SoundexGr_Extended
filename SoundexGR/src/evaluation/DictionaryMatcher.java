@@ -110,7 +110,7 @@ public class DictionaryMatcher {
         //int nwordsFound = 0;
         //for (int codeLen=12;  codeLen>=4;  codeLen--)  {
 
-        codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen(word);
+        codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
         SoundexGRExtra.LengthEncoding = codeLength;
         String wcode = SoundexGRExtra.encode(word);
         System.out.println("Code length: " + codeLength + " for word: " + word + " with code: " + wcode);

@@ -96,89 +96,111 @@ public class BulkCheck {
 
         float max_f_score = -1;
         int length_for_max_f_score = -1;
-        long start = System.nanoTime();
-        int length_for_testing = 2;
         int numOfWords = 0; // ytz: 2021 for counting the words
-        for (length_for_testing = 5; length_for_testing <= 20; length_for_testing++) {
-            System.out.println("Testing length: " + length_for_testing);
-            //System.out.println("Length for testing: " + length_for_testing);
-            // reading the eval collection
-            SoundexGRExtra.LengthEncoding = length_for_testing;
-            counter_words = 0;
+        long start = System.nanoTime();
 
-            float avg_f_score = 0;
+        switch (Dashboard.getSelectedMethod()) {
+            case "Real-time length calculation":
+                int length_for_testing = 2;
+                for (length_for_testing = 5; length_for_testing <= 20; length_for_testing++) {
+                    // reading the eval collection
+                    SoundexGRExtra.LengthEncoding = length_for_testing;
+                    counter_words = 0;
 
-            FileReader fl = new FileReader(path);
-            BufferedReader bfr = new BufferedReader(fl);
+                    float avg_f_score = 0;
 
-            while ((line = bfr.readLine()) != null) {
-                if (line.length() < 3) {
-                    continue;
-                }
+                    FileReader fl = new FileReader(path);
+                    BufferedReader bfr = new BufferedReader(fl);
 
-                counter_words++;
+                    while ((line = bfr.readLine()) != null) {
+                        counter_words++;
 
-                String[] tmp2 = line.split(","); // reading the tokens of a line
+                        String[] tmp2 = line.split(","); // reading the tokens of a line
 
-                float precision_word = -1, recall_word = -1, f_score_word;
-                if (!bounded) { // no bound on number of words
-                    LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
-                    ArrayList<String> res = utils.search(tmp2[0].trim(), type);
-                    precision_word = getPrecision(tmp, res);
-                    recall_word = getRecall(tmp, res);
-                    total_pre += precision_word; // adding the precision
-                    total_rec += recall_word; // adding the recall
-                    counter++;
-                    numOfWords += tmp2.length;
-                } else { // bounded number of word
-                    if (numOfWords < maxWordNum) { //
-                        LinkedHashSet<String> tmp = new LinkedHashSet<>();
-                        for (String s : tmp2) {
-                            if (numOfWords < maxWordNum) {
-                                tmp.add(s);
-                                numOfWords++;
+                        float precision_word = -1, recall_word = -1, f_score_word;
+                        if (!bounded) { // no bound on number of words
+                            LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
+                            ArrayList<String> res = utils.search(tmp2[0].trim(), type);
+                            precision_word = getPrecision(tmp, res);
+                            recall_word = getRecall(tmp, res);
+                            total_pre += precision_word; // adding the precision
+                            total_rec += recall_word; // adding the recall
+                            counter++;
+                            numOfWords += tmp2.length;
+                        } else { // bounded number of word
+                            if (numOfWords < maxWordNum) { //
+                                LinkedHashSet<String> tmp = new LinkedHashSet<>();
+                                for (String s : tmp2) {
+                                    if (numOfWords < maxWordNum) {
+                                        tmp.add(s);
+                                        numOfWords++;
+                                    }
+                                }
+                                ArrayList<String> res = utils.search(tmp2[0].trim(), type);
+
+                                precision_word = getPrecision(tmp, res);
+                                recall_word = getRecall(tmp, res);
+                                total_pre += precision_word; // adding the precision
+                                total_rec += recall_word; // adding the recall
+                                counter++;
+                            } else { // have read the max words
+
                             }
                         }
-                        ArrayList<String> res = utils.search(tmp2[0].trim(), type);
+                        f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
+                        avg_f_score += f_score_word;
+                    }
+                    bfr.close();
 
-                        precision_word = getPrecision(tmp, res);
-                        recall_word = getRecall(tmp, res);
-                        total_pre += precision_word; // adding the precision
-                        total_rec += recall_word; // adding the recall
-                        counter++;
-                    } else { // have read the max words
+                    if (counter_words == 0) {
+                        throw new RuntimeException("No words in the given document with length >=3");
+                    } else {
+                        avg_f_score /= counter_words;
+                    }
 
+                    if (avg_f_score > max_f_score) {
+                        max_f_score = avg_f_score;
+                        length_for_max_f_score = length_for_testing;
                     }
                 }
-                f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
-                avg_f_score += f_score_word;
-            }
-            bfr.close();
 
-            if (counter_words == 0) {
-                throw new RuntimeException("No words in the given document with length >=3");
-            } else {
-                avg_f_score /= counter_words;
-            }
+                System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
+                length_per_DocName.put(DocNames.get(file_index), length_for_max_f_score);
 
-            if (avg_f_score > max_f_score) {
-                max_f_score = avg_f_score;
-                length_for_max_f_score = length_for_testing;
-            }
+                float avgPrecision = total_pre / counter;    // computing the avg precision
+                float avgRecall = total_rec / counter;        // computing the avg recall
+                float avgFmeasure = 2 * (total_pre / counter) * (total_rec / counter) / ((total_pre / counter) + (total_rec / counter));
+
+                if (mw == null) {
+                    String filename = "Resources/measurements/currentMeasurements.csv";
+                    mw = new MeasurementsWriter(filename);
+                    mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
+                }
+
+
+                mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
+                mw.write(avgPrecision + ",");
+                mw.write(avgRecall + ",");
+                mw.write(avgFmeasure + "\n");
+                System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
+
+                break;
+            case "Predefined length":
+                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
+                break;
+            case "Hybrid Method":
+                System.out.println("Hybrid Method");
+                break;
+            default:
+                throw new RuntimeException("No method selected");
         }
-
-        System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
-        length_per_DocName.put(DocNames.get(file_index), length_for_max_f_score);
-
 
         long end = System.nanoTime();
         long total = end - start;
 
         double elapsedTime = (double) total / 1000 * 1000 * 1000;
         System.out.println("Elapsed time: " + elapsedTime);
-        float avgPrecision = total_pre / counter;    // computing the avg precision
-        float avgRecall = total_rec / counter;        // computing the avg recall
-        float avgFmeasure = 2 * (total_pre / counter) * (total_rec / counter) / ((total_pre / counter) + (total_rec / counter));
+
 
         /*
         if (SoundexGRExtra.LengthEncoding != SoundexGRSimple.LengthEncoding) { // if the config is not correct for experiments
@@ -186,18 +208,6 @@ public class BulkCheck {
         }
         */
 
-        if (mw == null) {
-            String filename = "Resources/measurements/currentMeasurements.csv";
-            mw = new MeasurementsWriter(filename);
-            mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
-        }
-
-
-        mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
-        mw.write(avgPrecision + ",");
-        mw.write(avgRecall + ",");
-        mw.write(avgFmeasure + "\n");
-        
         /*
         System.out.println("\tElapsed time     : " + elapsedTime);
         System.out.println("\tAverage Precision: " + avgPrecision); 
@@ -205,7 +215,6 @@ public class BulkCheck {
         System.out.println("\tF-Measure        : " + avgFmeasure);
         System.out.println("\tNum of words checked: " + numOfWords);
         */
-        System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
 
         //fr.close();  // closes the output file
     }
@@ -469,7 +478,7 @@ public class BulkCheck {
         return DocNames;
     }
 
-    public static void print_fscores() {
+    public static void execute_selected_method() {
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
 

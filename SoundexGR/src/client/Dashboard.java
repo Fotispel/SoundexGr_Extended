@@ -12,11 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.Objects;
 
 import static evaluation.BulkCheck.*;
 
@@ -50,6 +52,8 @@ public class Dashboard extends JFrame {
 
     private static String selectedDatasetFile;
 
+    private static String selectedMethod;
+
     /**
      * @return the appSoundexCodeLen
      */
@@ -79,13 +83,18 @@ public class Dashboard extends JFrame {
 
         setSelectedDatasetFile(DocNames.get(0));
 
-        BulkCheck.print_fscores();
+        String DefaultMethod = "Real-time length calculation";
+        setSelectedMethod(DefaultMethod);
 
+        //BulkCheck.execute_selected_method();
+
+        /*
         //Loading the dictionary (one getMatching initiates its loading)
         new Thread(() -> {
             DictionaryMatcher.getMatchings("αυγόβββ", Dashboard.getAppSoundexCodeLen());
             System.out.println("Dictionary loaded/refreshed.");
         }).start();
+         */
     }
 
     public static String getSelectedDatasetFile() {
@@ -94,6 +103,31 @@ public class Dashboard extends JFrame {
 
     public static void setSelectedDatasetFile(String selectedDatasetFile) {
         Dashboard.selectedDatasetFile = selectedDatasetFile;
+    }
+
+    public static String getSelectedMethod() {
+        return selectedMethod;
+    }
+
+    public static void setSelectedMethod(String selectedMethod) {
+        Dashboard.selectedMethod = selectedMethod;
+    }
+
+    public static int getNumberOfWords_of_SelectedDatasetFile() {
+        //calculate the number of words of the selected dataset file
+        File file = new File("Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt");
+        int count = 0;
+        try {
+            java.util.Scanner sc = new java.util.Scanner(file);
+            while (sc.hasNext()) {
+                sc.next();
+                count++;
+            }
+            sc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return count;
     }
 
     /**
@@ -148,6 +182,7 @@ public class Dashboard extends JFrame {
 
         createInput(generalInputPanel);
         createDatasetFilesSelection(generalInputPanel);
+        createMethodSelection(generalInputPanel);
         createPhonemicOperators(generalInputPanel);
         createMatchingOperators(generalInputPanel);
         createGeneralOperators(generalInputPanel);
@@ -432,7 +467,7 @@ public class Dashboard extends JFrame {
         // Add ActionListener to the combo box
         datasetComboBox.addActionListener(e -> {
             selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
-            SoundexGRExtra.LengthEncoding = length_per_DocName.get(selectedDatasetFile);
+            SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
             appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
             System.out.println("Optimal length " + appSoundexCodeLen + " for dataset " + selectedDatasetFile);
         });
@@ -450,6 +485,66 @@ public class Dashboard extends JFrame {
             this.add(datasetPanel); // adds to Frame
         } else {
             parentPanel.add(datasetPanel);
+        }
+    }
+
+    void createMethodSelection(JPanel parentPanel) {
+        // Panel for dataset files selection
+        JPanel methodPanel = new JPanel(new FlowLayout()); // rows, columns, int hgap, int vgap)
+        methodPanel.setBackground(ColorMgr.colorBackground);
+
+        methodPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Select Method"));
+
+        // Label for the combo box
+        JLabel methodLabel = new JLabel("Method:");
+
+        // JComboBox for selecting dataset files
+        String[] methods = {"","Real-time length calculation", "Predefined length", "Hybrid method"};
+
+        JComboBox<String> methodComboBox = new JComboBox<>(methods);
+
+        // Add ActionListener to the combo box
+        methodComboBox.addActionListener(e -> {
+            selectedMethod = (String) methodComboBox.getSelectedItem();
+
+            if (Objects.equals(selectedMethod, "Real-time length calculation") && BulkCheck.length_per_DocName.isEmpty()) {  //1st method
+                BulkCheck.execute_selected_method();
+            } else if (Objects.equals(selectedMethod, "Predefined length") && BulkCheck.length_per_DocName.isEmpty()) {  //2nd method
+                BulkCheck.execute_selected_method();
+            } else if (Objects.equals(selectedMethod, "Hybrid method") && BulkCheck.length_per_DocName.isEmpty()) {  //3rd method
+                BulkCheck.execute_selected_method();
+            }
+
+            assert selectedMethod != null;
+            switch (selectedMethod) {
+                case "Real-time length calculation":
+                    SoundexGRExtra.LengthEncoding = length_per_DocName.get(selectedDatasetFile);
+                    appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
+                    break;
+                case "Predefined length":
+
+                    break;
+                case "Hybrid method":
+                    SoundexGRExtra.LengthEncoding = 6;  // to be changed
+                    appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
+                    break;
+            }
+        });
+
+        // Set font for combo box and label
+        methodLabel.setFont(appButtonfont);
+        methodComboBox.setFont(appButtonfont);
+
+        // Add components to the panel
+        methodPanel.add(methodLabel);
+        methodPanel.add(methodComboBox);
+
+        // Add the panel to the parent panel or frame
+        if (parentPanel == null) {
+            this.add(methodPanel); // adds to Frame
+        } else {
+            parentPanel.add(methodPanel);
         }
     }
 

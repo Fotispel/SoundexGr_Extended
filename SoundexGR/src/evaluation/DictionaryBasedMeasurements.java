@@ -254,7 +254,7 @@ public class DictionaryBasedMeasurements {
     }
 
 
-    public static int calculateSuggestedCodeLen(String word) {
+    public static int calculateSuggestedCodeLen() {
         int File_index = -1;
 
         // Search for the selected dataset file in the datasetFileList
@@ -266,15 +266,38 @@ public class DictionaryBasedMeasurements {
             }
         }
 
-        // If the file index was found, calculate the length
-        if (File_index != -1) {
-            int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
-            Dashboard.appSoundexCodeLen = length; // Set length
-            return length;
-        } else {
-            // Handle the case where the selected file was not found
-            System.err.println("File not found: " + Dashboard.getSelectedDatasetFile());
-            return -1; // or some default value
+        switch (Dashboard.getSelectedMethod()) {
+            // If the file index was found, calculate the length
+            case ("Real-time length calculation"):
+                if (File_index != -1) {
+                    int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
+                    Dashboard.appSoundexCodeLen = length; // Set length
+                    return length;
+                } else {
+                    // Handle the case where the selected file was not found
+                    System.err.println("File not found: " + Dashboard.getSelectedDatasetFile());
+                    return -1; // or some default value
+                }
+            case ("Predefined length"):
+                int numWords = Dashboard.getNumberOfWords_of_SelectedDatasetFile();
+                if (numWords <= 0) {
+                    throw new RuntimeException("Number of words should be greater than 0");
+                } else if (numWords <= 100) {
+                    Dashboard.appSoundexCodeLen = 4;
+                } else if (numWords <= 1000) {
+                    Dashboard.appSoundexCodeLen = 7;
+                } else if (numWords <= 2000) {
+                    Dashboard.appSoundexCodeLen = 8;
+                } else if (numWords <= 3000) {
+                    Dashboard.appSoundexCodeLen = 11;
+                } else {
+                    Dashboard.appSoundexCodeLen = 12;
+                }
+                return Dashboard.appSoundexCodeLen;
+            case ("Hybrid length"):
+                int Hybrid_length;
+            default:
+                return -1;
         }
     }
 
