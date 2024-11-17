@@ -308,36 +308,45 @@ public class DictionaryBasedMeasurements {
      * @param code
      * @return
      */
-    public static Set<String> returnWordsHavingTheSameCode(String code) {
-        if (codesToWords == null) {    // the dictionary has not been processed
-            codesToWords = new HashMap<>(); // the map
-            String line;
+    public static Set<String> returnWordsHavingTheSameCode(String code, String path) {
+        //if (codesToWords == null) {
+        codesToWords = new HashMap<>(); // the map
+        String line;
 
-            System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
+        //System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
 
-            try {
-                // Use FileInputStream instead of getResourceAsStream
-                FileInputStream inDict = new FileInputStream(placeDict);
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+        try {
+            String dictResourcePlace;
 
-                while ((line = bfr.readLine()) != null) {
-                    String wordEncoded = SoundexGRExtra.encode(line);
-                    HashSet<String> wordsWithThatCode = codesToWords.get(wordEncoded);
-                    if (wordsWithThatCode == null) { // the code is not in the map
-                        wordsWithThatCode = new HashSet<>();
-                        wordsWithThatCode.add(line);
-                        codesToWords.put(wordEncoded, wordsWithThatCode);
-                    } else {
-                        wordsWithThatCode.add(line);
-                    }
-                }
-                bfr.close(); // Close BufferedReader after reading the file
-            } catch (Exception e) {
-                System.out.println(e);
+            // Use FileInputStream instead of getResourceAsStream
+            String currentDir = System.getProperty("user.dir");
+            if (path == null) {
+                dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+            } else {
+                dictResourcePlace = currentDir + path;
             }
-
-            System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
+            setDictionaryLocation(dictResourcePlace);
+            //System.out.printf("Reading dictionary from %s\n", placeDict);
+            FileInputStream inDict = new FileInputStream(placeDict);
+            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+            while ((line = bfr.readLine()) != null) {
+                String wordEncoded = SoundexGRExtra.encode(line);
+                HashSet<String> wordsWithThatCode = codesToWords.get(wordEncoded);
+                if (wordsWithThatCode == null) { // the code is not in the map
+                    wordsWithThatCode = new HashSet<>();
+                    wordsWithThatCode.add(line);
+                    codesToWords.put(wordEncoded, wordsWithThatCode);
+                } else {
+                    wordsWithThatCode.add(line);
+                }
+            }
+            bfr.close(); // Close BufferedReader after reading the file
+        } catch (Exception e) {
+            System.out.println(e);
         }
+
+        //System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
+        //}
         return codesToWords.get(code);
     }
 

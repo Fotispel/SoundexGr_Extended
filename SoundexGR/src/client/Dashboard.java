@@ -50,9 +50,9 @@ public class Dashboard extends JFrame {
 
     public static int appSoundexCodeLen = 6;
 
-    private static String selectedDatasetFile;
+    private static String selectedDatasetFile = null;
 
-    private static String selectedMethod;
+    private static String selectedMethod = null;
 
     /**
      * @return the appSoundexCodeLen
@@ -83,7 +83,7 @@ public class Dashboard extends JFrame {
 
         setSelectedDatasetFile(DocNames.get(0));
 
-        String DefaultMethod = "Real-time length calculation";
+        String DefaultMethod = "";
         setSelectedMethod(DefaultMethod);
 
         //BulkCheck.execute_selected_method();
@@ -116,6 +116,24 @@ public class Dashboard extends JFrame {
     public static int getNumberOfWords_of_SelectedDatasetFile() {
         //calculate the number of words of the selected dataset file
         File file = new File("Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt");
+        int count = 0;
+        try {
+            java.util.Scanner sc = new java.util.Scanner(file);
+            while (sc.hasNext()) {
+                sc.next();
+                count++;
+            }
+            sc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+
+    public static int getNumberOfWords_of_DatasetFile(String docName) {
+        //calculate the number of words of the selected dataset file
+        File file = new File("Resources//collection_words//" + docName + "_words.txt");
         int count = 0;
         try {
             java.util.Scanner sc = new java.util.Scanner(file);
@@ -467,9 +485,14 @@ public class Dashboard extends JFrame {
         // Add ActionListener to the combo box
         datasetComboBox.addActionListener(e -> {
             selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
-            SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
-            appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
-            System.out.println("Optimal length " + appSoundexCodeLen + " for dataset " + selectedDatasetFile);
+
+            if (!Objects.equals(getSelectedMethod(), "")) {
+                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
+                appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
+                System.out.println("Optimal length " + appSoundexCodeLen + " for dataset " + selectedDatasetFile);
+            } else {
+                System.out.println("No method selected yet.");
+            }
         });
 
         // Set font for combo box and label

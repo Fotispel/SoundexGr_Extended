@@ -27,6 +27,7 @@ import javax.print.Doc;
 public class BulkCheck {
     public static String[] DatasetFiles;
     public static ArrayList<String> DocNames = Read_and_Write_to_file();
+    Map<Integer, Integer> length_per_docSize = new HashMap<>();
     public static List<String> datasetFileWords = new ArrayList<>();
 
     public static ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
@@ -76,14 +77,14 @@ public class BulkCheck {
      * It computes precision/recall/f-measure
      *
      * @param utils
-     * @param path        the file with the eval collection
-     * @param type        the matching (soundex) algorith to be applied
-     * @param fileToWrite the file to write (currently it just creates the file, it does not store anything there)
-     * @param maxWordNum  max number of words to consider, if 0 no limit is applied
+     * @param misspellings_path the file with the eval collection
+     * @param type              the matching (soundex) algorith to be applied
+     * @param fileToWrite       the file to write (currently it just creates the file, it does not store anything there)
+     * @param maxWordNum        max number of words to consider, if 0 no limit is applied
      * @throws FileNotFoundException
      * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
      */
-    public void check(Utilities utils, String path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
+    public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
         boolean bounded = maxWordNum != 0;  // true if the max num of words should be applied
 
         String line;
@@ -108,8 +109,9 @@ public class BulkCheck {
                     counter_words = 0;
 
                     float avg_f_score = 0;
+                    float total_f_score = 0;
 
-                    FileReader fl = new FileReader(path);
+                    FileReader fl = new FileReader(misspellings_path);
                     BufferedReader bfr = new BufferedReader(fl);
 
                     while ((line = bfr.readLine()) != null) {
@@ -148,14 +150,14 @@ public class BulkCheck {
                             }
                         }
                         f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
-                        avg_f_score += f_score_word;
+                        total_f_score += f_score_word;
                     }
                     bfr.close();
 
                     if (counter_words == 0) {
                         throw new RuntimeException("No words in the given document with length >=3");
                     } else {
-                        avg_f_score /= counter_words;
+                        avg_f_score = total_f_score / counter_words;
                     }
 
                     if (avg_f_score > max_f_score) {
@@ -166,6 +168,9 @@ public class BulkCheck {
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
                 length_per_DocName.put(DocNames.get(file_index), length_for_max_f_score);
+
+                length_per_docSize.put(length_for_max_f_score, Dashboard.getNumberOfWords_of_DatasetFile(DocNames.get(file_index)));
+                //System.out.println("Length per docSize: " + length_per_docSize);
 
                 float avgPrecision = total_pre / counter;    // computing the avg precision
                 float avgRecall = total_rec / counter;        // computing the avg recall
@@ -182,14 +187,98 @@ public class BulkCheck {
                 mw.write(avgPrecision + ",");
                 mw.write(avgRecall + ",");
                 mw.write(avgFmeasure + "\n");
-                System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
-
+                //System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
                 break;
             case "Predefined length":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
                 break;
-            case "Hybrid Method":
-                System.out.println("Hybrid Method");
+            case "Hybrid method":
+                String docName = DocNames.get(file_index);
+                String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
+                Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
+                for (int length_word = 2; length_word < 10; length_word++) {
+                    SoundexGRExtra.LengthEncoding = length_word; // setting the length for encoding
+
+                    FileReader fl = new FileReader(misspellings_path);
+                    BufferedReader bfr = new BufferedReader(fl);
+                    ArrayList<String> checked_codes = new ArrayList<>();
+                    while ((line = bfr.readLine()) != null) {
+                        String word = line.split(",")[0];
+                        String wcode = SoundexGRExtra.encode(word);
+                        if (!checked_codes.contains(wcode)) {
+
+                            Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_toWordsFile);
+
+                            if (wordsHavingTheSameCode != null) {
+                                // Add the words to the map using wcode as key
+                                List<Set<String>> words;
+                                if (SameCodeWords_per_length.containsKey(length_word)) {
+                                    words = SameCodeWords_per_length.get(length_word);
+                                } else {
+                                    words = new ArrayList<>();
+                                }
+                                words.add(wordsHavingTheSameCode);
+                                SameCodeWords_per_length.put(length_word, words);
+                            }
+
+                            checked_codes.add(wcode);
+                        }
+                    }
+                    bfr.close();
+                }
+                // Print words grouped by their wcode
+                for (int length = 2; length < 10; length++) {
+                    if (SameCodeWords_per_length.containsKey(length)) {
+                        List<Set<String>> words = SameCodeWords_per_length.get(length);
+                        System.out.println("Words with length " + length + ": " + words);
+
+                    } else {
+                        System.out.println("No words with length " + length);
+                    }
+                }
+
+                final float K = 1.5f; // Predefined optimal size of the list
+
+                float[] avg_list_size = new float[10];
+
+                // Calculate average list size for each length
+                for (int length = 2; length < 10; length++) {
+                    if (SameCodeWords_per_length.containsKey(length)) {
+                        List<Set<String>> words = SameCodeWords_per_length.get(length);
+
+                        // Sum the sizes of all sets
+                        int totalSize = 0;
+                        for (Set<String> wordSet : words) {
+                            totalSize += wordSet.size();
+                        }
+
+                        // Calculate the average list size
+                        float avgSize = words.isEmpty() ? 0 : (float) totalSize / words.size();
+                        avg_list_size[length] = avgSize;
+
+                        // Print the average size for this encoding length
+                        System.out.println("Average list size for length " + length + ": " + avg_list_size[length]);
+                    } else {
+                        System.out.println("No words with length " + length);
+                    }
+                }
+
+                int optimal_length = -1;
+                float min_difference_from_K = Float.MAX_VALUE;
+
+                for (int length = 2; length < 10; length++) {
+                    if (SameCodeWords_per_length.containsKey(length)) {
+                        float difference = Math.abs(K - avg_list_size[length]);
+                        System.out.println("For length " + length + " the difference from K (=" + K + ") is " + difference);
+                        if (difference < min_difference_from_K) {
+                            min_difference_from_K = difference;
+                            optimal_length = length;
+                        }
+                    }
+                }
+                System.out.println("Optimal length: " + optimal_length);
+
+
                 break;
             default:
                 throw new RuntimeException("No method selected");
@@ -384,7 +473,8 @@ public class BulkCheck {
         }
     }
 
-    private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
+    private static void write_wordsOfDoc_to_files
+            (Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
         try {
             if (allWordsByDoc.isEmpty()) {
                 throw new RuntimeException("No words in the given document");
@@ -513,7 +603,7 @@ public class BulkCheck {
 
                 DatasetFiles_Misspellings.add(misspellingFile);  // Add the misspelling file to the ArrayList
 
-                System.out.print("\n[" + DatasetFiles[j] + "]: ");
+                System.out.println("\n[" + DatasetFiles[j] + "]: ");
                 utils.readFile(DatasetFiles_Misspellings.get(j));  // Retrieve the file at index j
                 bulkCheckRun.check(utils, DatasetFiles_Misspellings.get(j), "soundex", "Resources/names/results/sames-soundex.txt", 0, file_index);
                 file_index++;
