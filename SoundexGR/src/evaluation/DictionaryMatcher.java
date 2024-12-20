@@ -110,12 +110,13 @@ public class DictionaryMatcher {
         //int nwordsFound = 0;
         //for (int codeLen=12;  codeLen>=4;  codeLen--)  {
 
-        codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
+        codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
         SoundexGRExtra.LengthEncoding = codeLength;
         String wcode = SoundexGRExtra.encode(word);
         System.out.println("Code length: " + codeLength + " for word: " + word + " with code: " + wcode);
 
-        Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, Dashboard.getSelectedDatasetFile());
+        String path_to_selected_dataset = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+        Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_to_selected_dataset);
         ArrayList<String> matches = new ArrayList<>();
         if (wordsHavingTheSameCode != null) {
             for (String m : wordsHavingTheSameCode) {

@@ -487,9 +487,7 @@ public class Dashboard extends JFrame {
             selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
 
             if (!Objects.equals(getSelectedMethod(), "")) {
-                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen();
-                appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
-                System.out.println("Optimal length " + appSoundexCodeLen + " for dataset " + selectedDatasetFile);
+                execute_selected_method();
             } else {
                 System.out.println("No method selected yet.");
             }
@@ -523,7 +521,7 @@ public class Dashboard extends JFrame {
         JLabel methodLabel = new JLabel("Method:");
 
         // JComboBox for selecting dataset files
-        String[] methods = {"","Real-time length calculation", "Predefined length", "Hybrid method"};
+        String[] methods = {"", "Real-time length calculation", "Predefined length", "Hybrid method i-ii", "Hybrid method ii-iii"};
 
         JComboBox<String> methodComboBox = new JComboBox<>(methods);
 
@@ -531,26 +529,20 @@ public class Dashboard extends JFrame {
         methodComboBox.addActionListener(e -> {
             selectedMethod = (String) methodComboBox.getSelectedItem();
 
-            if (Objects.equals(selectedMethod, "Real-time length calculation") && BulkCheck.length_per_DocName.isEmpty()) {  //1st method
-                BulkCheck.execute_selected_method();
-            } else if (Objects.equals(selectedMethod, "Predefined length") && BulkCheck.length_per_DocName.isEmpty()) {  //2nd method
-                BulkCheck.execute_selected_method();
-            } else if (Objects.equals(selectedMethod, "Hybrid method") && BulkCheck.length_per_DocName.isEmpty()) {  //3rd method
-                BulkCheck.execute_selected_method();
-            }
-
             assert selectedMethod != null;
-            switch (selectedMethod) {
-                case "Real-time length calculation":
-                    SoundexGRExtra.LengthEncoding = length_per_DocName.get(selectedDatasetFile);
-                    appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
-                    break;
-                case "Predefined length":
 
+            switch (selectedMethod) {
+                case "Real-time length calculation":   //1st method
+                    BulkCheck.execute_selected_method();
                     break;
-                case "Hybrid method":
-                    SoundexGRExtra.LengthEncoding = 6;  // to be changed
-                    appSoundexCodeLen = SoundexGRExtra.LengthEncoding;
+                case "Predefined length":   //2nd method
+                    BulkCheck.execute_selected_method();
+                    break;
+                case "Hybrid method i-ii":   //3rd method
+                    BulkCheck.execute_selected_method();
+                    break;
+                case "Hybrid method ii-iii":   //4th method
+                    BulkCheck.execute_selected_method();
                     break;
             }
         });

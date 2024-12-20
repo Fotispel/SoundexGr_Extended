@@ -254,7 +254,7 @@ public class DictionaryBasedMeasurements {
     }
 
 
-    public static int calculateSuggestedCodeLen() {
+    public static int calculateSuggestedCodeLen(String SelectedMethod) {
         int File_index = -1;
 
         // Search for the selected dataset file in the datasetFileList
@@ -266,7 +266,7 @@ public class DictionaryBasedMeasurements {
             }
         }
 
-        switch (Dashboard.getSelectedMethod()) {
+        switch (SelectedMethod) {
             // If the file index was found, calculate the length
             case ("Real-time length calculation"):
                 if (File_index != -1) {
@@ -294,8 +294,10 @@ public class DictionaryBasedMeasurements {
                     Dashboard.appSoundexCodeLen = 12;
                 }
                 return Dashboard.appSoundexCodeLen;
-            case ("Hybrid length"):
+            case ("Hybrid length i-ii"):
                 int Hybrid_length;
+            case ("Hybrid length ii-iii"):
+                int Hybrid_length2;
             default:
                 return -1;
         }
