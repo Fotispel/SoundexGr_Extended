@@ -168,9 +168,10 @@ public class BulkCheck {
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
-                length_per_DocName.put(DocNames.get(file_index), length_for_max_f_score);
 
-                length_per_docSize.put(length_for_max_f_score, Dashboard.getNumberOfWords_of_DatasetFile(DocNames.get(file_index)));
+                length_per_DocName.put(Dashboard.getSelectedDatasetFile(), length_for_max_f_score);
+
+                length_per_docSize.put(length_for_max_f_score, Dashboard.getNumberOfWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
                 //System.out.println("Length per docSize: " + length_per_docSize);
 
                 float avgPrecision = total_pre / counter;    // computing the avg precision

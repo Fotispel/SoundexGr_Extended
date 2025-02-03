@@ -19,6 +19,7 @@ import SoundexGR.SoundexGRExtra;
 import stemmerWrapper.StemmerWrapper;
 import evaluation.BulkCheck.*;
 
+import static evaluation.BulkCheck.DocNames;
 import static evaluation.BulkCheck.length_per_DocName;
 
 /**
@@ -270,6 +271,9 @@ public class DictionaryBasedMeasurements {
             // If the file index was found, calculate the length
             case ("Real-time length calculation"):
                 if (File_index != -1) {
+                    System.out.println("File index: " + File_index);
+                    System.out.println("Doc name: " + Dashboard.getSelectedDatasetFile());
+                    System.out.println("Length: " + length_per_DocName.get(Dashboard.getSelectedDatasetFile()));
                     int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
                     Dashboard.appSoundexCodeLen = length; // Set length
                     return length;
@@ -294,11 +298,12 @@ public class DictionaryBasedMeasurements {
                     Dashboard.appSoundexCodeLen = 12;
                 }
                 return Dashboard.appSoundexCodeLen;
-            case ("Hybrid length i-ii"):
-                int Hybrid_length;
-            case ("Hybrid length ii-iii"):
-                int Hybrid_length2;
+            case ("Hybrid method i-ii"):
+                return SoundexGRExtra.LengthEncoding;
+            case ("Hybrid method ii-iii"):
+                return SoundexGRExtra.LengthEncoding;
             default:
+                System.out.println("Error: No method selected");
                 return -1;
         }
     }
