@@ -5,8 +5,10 @@
  */
 package evaluation;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -245,7 +247,7 @@ public class BulkCheck {
     }
 
     public void HybridMethod_execution(int file_index, String misspellings_path, int[] lengthsForTesting) throws IOException {
-        String docName = DocNames.get(file_index);
+        String docName = Dashboard.getSelectedDatasetFile();
         String line;
         String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
@@ -276,6 +278,7 @@ public class BulkCheck {
                         }
                         words.add(wordsHavingTheSameCode);
                         SameCodeWords_per_length.put(length_word, words);
+                        System.out.println("Length: " + length_word + " SameCodeWords_per_length: " + SameCodeWords_per_length.get(length_word));
                     }
 
                     checked_codes.add(wcode);
@@ -284,7 +287,7 @@ public class BulkCheck {
             bfr.close();
         }
         // Print words grouped by their wcode
-        for (int length = 2; length < 10; length++) {
+        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 List<Set<String>> words = SameCodeWords_per_length.get(length);
                 System.out.println("Words with length " + length + ": " + words);
@@ -299,7 +302,7 @@ public class BulkCheck {
         float[] avg_list_size = new float[10];
 
         // Calculate average list size for each length
-        for (int length = 2; length < 10; length++) {
+        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 List<Set<String>> words = SameCodeWords_per_length.get(length);
 
@@ -323,7 +326,7 @@ public class BulkCheck {
         int optimal_length = -1;
         float min_difference_from_K = Float.MAX_VALUE;
 
-        for (int length = 2; length < 10; length++) {
+        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 float difference = Math.abs(K - avg_list_size[length]);
                 System.out.println("For length " + length + " the difference from K (=" + K + ") is " + difference);
@@ -636,6 +639,7 @@ public class BulkCheck {
             utils.readFile(misspellingFile);  // Retrieve the file at index j
             bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0, file_index);
             file_index++;
+            Toolkit.getDefaultToolkit().beep();
             utils.clear();
             //}
 
