@@ -260,7 +260,6 @@ public class DictionaryBasedMeasurements {
 
         // Search for the selected dataset file in the datasetFileList
         for (int i = 0; i < BulkCheck.DatasetFiles.length; i++) {
-            System.out.println("Selected Dataset File: " + Dashboard.getSelectedDatasetFile());
             if (BulkCheck.DatasetFiles[i].endsWith(Dashboard.getSelectedDatasetFile() + ".txt")) {
                 File_index = i;
                 break;
