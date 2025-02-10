@@ -278,7 +278,7 @@ public class BulkCheck {
                         }
                         words.add(wordsHavingTheSameCode);
                         SameCodeWords_per_length.put(length_word, words);
-                        System.out.println("Length: " + length_word + " SameCodeWords_per_length: " + SameCodeWords_per_length.get(length_word));
+                        //System.out.println("Length: " + length_word + " SameCodeWords_per_length: " + SameCodeWords_per_length.get(length_word));
                     }
 
                     checked_codes.add(wcode);
@@ -290,10 +290,10 @@ public class BulkCheck {
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 List<Set<String>> words = SameCodeWords_per_length.get(length);
-                System.out.println("Words with length " + length + ": " + words);
+                //System.out.println("Words with length " + length + ": " + words);
 
             } else {
-                System.out.println("No words with length " + length);
+                //System.out.println("No words with length " + length);
             }
         }
 
@@ -317,9 +317,9 @@ public class BulkCheck {
                 avg_list_size[length] = avgSize;
 
                 // Print the average size for this encoding length
-                System.out.println("Average list size for length " + length + ": " + avg_list_size[length]);
+                //System.out.println("Average list size for length " + length + ": " + avg_list_size[length]);
             } else {
-                System.out.println("No words with length " + length);
+                //System.out.println("No words with length " + length);
             }
         }
 
@@ -329,7 +329,7 @@ public class BulkCheck {
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 float difference = Math.abs(K - avg_list_size[length]);
-                System.out.println("For length " + length + " the difference from K (=" + K + ") is " + difference);
+                //System.out.println("For length " + length + " the difference from K (=" + K + ") is " + difference);
                 if (difference < min_difference_from_K) {
                     min_difference_from_K = difference;
                     optimal_length = length;
