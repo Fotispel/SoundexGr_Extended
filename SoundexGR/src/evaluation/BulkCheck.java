@@ -105,8 +105,7 @@ public class BulkCheck {
         switch (Dashboard.getSelectedMethod()) {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
-                int length_for_testing = 2;
-                for (length_for_testing = 5; length_for_testing <= 20; length_for_testing++) {
+                for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     // reading the eval collection
                     SoundexGRExtra.LengthEncoding = length_for_testing;
                     counter_words = 0;
@@ -126,6 +125,11 @@ public class BulkCheck {
                         if (!bounded) { // no bound on number of words
                             LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
                             ArrayList<String> res = utils.search(tmp2[0].trim(), type);
+                            /*
+                            System.out.println("tmp: " + tmp2[0].trim());
+                            System.out.println("type: " + type);
+                            System.out.println("res: " + res);
+                             */
                             precision_word = getPrecision(tmp, res);
                             recall_word = getRecall(tmp, res);
                             total_pre += precision_word; // adding the precision
@@ -158,7 +162,7 @@ public class BulkCheck {
                     bfr.close();
 
                     if (counter_words == 0) {
-                        throw new RuntimeException("No words in the given document with length >=3");
+                        throw new RuntimeException("No words in the given document that can be used for evaluation");
                     } else {
                         avg_f_score = total_f_score / counter_words;
                     }
