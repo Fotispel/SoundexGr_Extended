@@ -23,13 +23,15 @@ import SoundexGR.SoundexGRExtra;
 
 /**
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
- *
  */
 public class DictionaryMatcher {
+    public static String FirstMatch = "";
+    private static boolean FirstMatchFound = false;
 
 
     /**
      * Lookups a work in the dictionary
+     *
      * @param word
      * @return
      */
@@ -40,6 +42,7 @@ public class DictionaryMatcher {
 
     /**
      * finds those words with edit distance less than k
+     *
      * @param word
      * @param K
      * @return
@@ -59,11 +62,13 @@ public class DictionaryMatcher {
 
     /**
      * Ranks a set of word by their edit distance withe one word
+     *
      * @param word
      * @param wordsToRank
      * @return
      */
     public static Map<String, Integer> RankByEditDistance(String word, Set<String> wordsToRank) {
+        FirstMatchFound = false;
         Map<String, Integer> wordsAndDists = new HashMap<>();
         for (String candidateword : wordsToRank) {
             wordsAndDists.put(candidateword, EditDistance.EditDistDP(word, candidateword));
@@ -78,6 +83,14 @@ public class DictionaryMatcher {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (e1, e2) -> e2, LinkedHashMap::new));
 
+
+        if (!sorted.isEmpty() && !FirstMatchFound) {
+            FirstMatch = sorted.keySet().iterator().next();
+            FirstMatchFound = true;
+        }
+        else if (!FirstMatchFound) // if the map is empty
+            FirstMatch = "";
+
         return sorted;
 
     }
@@ -85,14 +98,20 @@ public class DictionaryMatcher {
 
     /**
      * Returns a string with the matching of a word, by using code length as defined by the parameter
+     *
      * @param word
-     * @param codeLength  the code length to be used
+     * @param codeLength the code length to be used
      * @return a verbose string with the results of the matchings
      */
 
-    public static String getMatchings(String word, int codeLength) {
+    public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
+        System.out.println("Word for matchings: " + word);
         String currentDir = System.getProperty("user.dir");
-        String dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+        String dictResourcePlace;
+        if (!isRunningDemo)
+            dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+        else
+            dictResourcePlace = currentDir + "\\Resources\\dictionaries\\EN-winedt\\gr.dic";
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
@@ -168,7 +187,7 @@ public class DictionaryMatcher {
 
         for (int i = 0; i < exampleWords.length; i++) {
             String ex = exampleWords[i];
-            String m = getMatchings(ex, 12);
+            String m = getMatchings(ex, 12, false);
             System.out.println(ex + "\t: " + m);
         }
     }

@@ -43,6 +43,7 @@ public class Dashboard extends JFrame {
 
     static JButton clearB;
     static JButton swapB;
+    static JButton demoB;
 
     static Font appTextfont = new Font("monospaced", Font.BOLD, 18);  //  Font.PLAIN Font.BOLD
     static Font consoleTextfont = new Font("monospaced", Font.PLAIN, 12);  //  Font.PLAIN Font.BOLD
@@ -376,19 +377,23 @@ public class Dashboard extends JFrame {
 
         clearB = new JButton("Clear"); //clear
         swapB = new JButton("Set Output as Input"); //clear
+        demoB = new JButton("Live Demo");
 
         clearB.setBackground(Color.LIGHT_GRAY);
         swapB.setBackground(Color.LIGHT_GRAY);
+        demoB.setBackground(Color.LIGHT_GRAY);
 
         // Array with all buttons
         JButton[] allButtons = {
                 clearB,
-                swapB
+                swapB,
+                demoB
         };
 
         // tooltips
         clearB.setToolTipText("Clears the input area");
         swapB.setToolTipText("Set Output as Input");
+        demoB.setToolTipText("Live Demo");
 
         // Add Buttons to Panel and sets action listeners
         for (JButton b : allButtons) {

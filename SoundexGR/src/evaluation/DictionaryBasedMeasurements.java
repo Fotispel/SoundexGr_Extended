@@ -286,15 +286,15 @@ public class DictionaryBasedMeasurements {
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
-                    Dashboard.appSoundexCodeLen = 4;
+                    Dashboard.appSoundexCodeLen = 3;
                 } else if (numWords <= 1000) {
-                    Dashboard.appSoundexCodeLen = 7;
+                    Dashboard.appSoundexCodeLen = 4;
                 } else if (numWords <= 2000) {
-                    Dashboard.appSoundexCodeLen = 8;
+                    Dashboard.appSoundexCodeLen = 5;
                 } else if (numWords <= 3000) {
-                    Dashboard.appSoundexCodeLen = 11;
+                    Dashboard.appSoundexCodeLen = 6;
                 } else {
-                    Dashboard.appSoundexCodeLen = 12;
+                    Dashboard.appSoundexCodeLen = 6;
                 }
                 return Dashboard.appSoundexCodeLen;
             case ("Hybrid method i-ii"):

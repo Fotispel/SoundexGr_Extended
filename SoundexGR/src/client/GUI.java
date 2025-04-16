@@ -5,17 +5,10 @@ package client;
 
 /**
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
- *
  */
 
 
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -31,22 +24,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
@@ -58,8 +36,8 @@ import utils.Tokenizer;
 
 /**
  * AppController: The controller of the graphical add
- * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  *
+ * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
 
 class AppController implements ActionListener {
@@ -81,6 +59,67 @@ class AppController implements ActionListener {
         // Set Output as Input Clear BUTTON
         if (event.getSource() == Dashboard.swapB) {
             Dashboard.textInputArea.setText(Dashboard.textOutputArea.getText());
+        }
+
+        // Live Demo
+        if (event.getSource() == Dashboard.demoB) {
+            // Create new frame
+            JFrame demoFrame = new JFrame("Demo Text Panel");
+            demoFrame.setSize(800, 600);
+            demoFrame.setLocationRelativeTo(null); // center on screen
+
+            // Create text area and scroll pane
+            JTextArea demoTextArea = new JTextArea();
+            demoTextArea.setLineWrap(true);
+            demoTextArea.setWrapStyleWord(true);
+            JScrollPane scrollPane = new JScrollPane(demoTextArea);
+            scrollPane.setPreferredSize(new Dimension(780, 510));
+
+            CardLayout WordToButtonsCard = new CardLayout();
+            JPanel WordToButtons = new JPanel(WordToButtonsCard);
+
+            JButton runDemoButton = new JButton("Run Demo");
+
+            JCheckBox editTextCheckBox = new JCheckBox("Edit Text", true);
+            editTextCheckBox.addActionListener(e -> demoTextArea.setEditable(editTextCheckBox.isSelected()));
+
+            runDemoButton.addActionListener(e -> {
+                String inputText = demoTextArea.getText();
+                StringBuilder outputText = new StringBuilder();
+
+                ArrayList<String> tokens = Tokenizer.getTokens(inputText);
+
+                for (String token : tokens) {
+                    if (token.length() < 3) {
+                        outputText.append(token).append(" ");
+                        continue;
+                    }
+
+                    String output = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true) + "\n";
+                    System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
+                    outputText.append(DictionaryMatcher.FirstMatch).append(" ");
+                }
+
+                System.out.println("Demo output: " + outputText);
+                demoTextArea.setText(outputText.toString());
+            });
+
+
+
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(e -> demoFrame.dispose());
+
+            // Panel for layout
+            JPanel panel = new JPanel();
+            panel.setLayout(new FlowLayout());
+            panel.add(scrollPane);
+            panel.add(closeButton);
+            panel.add(runDemoButton);
+            panel.add(editTextCheckBox);
+
+            // Add panel to frame
+            demoFrame.add(panel);
+            demoFrame.setVisible(true);
         }
 
         // Code Length
@@ -197,7 +236,7 @@ class AppController implements ActionListener {
             String output = "";
             for (String token : tokens) {
                 //output += token + ":";
-                output += DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen()) + "\n";
+                output += DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), false) + "\n";
             }
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);
