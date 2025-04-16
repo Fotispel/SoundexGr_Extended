@@ -68,15 +68,23 @@ class AppController implements ActionListener {
             demoFrame.setSize(800, 600);
             demoFrame.setLocationRelativeTo(null); // center on screen
 
-            // Create text area and scroll pane
+            CardLayout layout = new CardLayout();
+            JPanel cardPanel = new JPanel(layout);
+
+            // Text Area with scroll
             JTextArea demoTextArea = new JTextArea();
             demoTextArea.setLineWrap(true);
             demoTextArea.setWrapStyleWord(true);
             JScrollPane scrollPane = new JScrollPane(demoTextArea);
             scrollPane.setPreferredSize(new Dimension(780, 510));
 
-            CardLayout WordToButtonsCard = new CardLayout();
-            JPanel WordToButtons = new JPanel(WordToButtonsCard);
+            // Panel to hold buttons (words)
+            JPanel wordButtonsPanel = new JPanel(new FlowLayout());
+
+            // Add both to card panel
+            cardPanel.add(scrollPane, "TEXT_AREA");
+            cardPanel.add(wordButtonsPanel, "BUTTONS");
+
 
             JButton runDemoButton = new JButton("Run Demo");
 
@@ -104,20 +112,39 @@ class AppController implements ActionListener {
                 demoTextArea.setText(outputText.toString());
             });
 
+            editTextCheckBox.addActionListener(e -> {
+                boolean selected = editTextCheckBox.isSelected();
+                if (selected) {
+                    System.out.println("Edit Text selected");
+                    layout.show(cardPanel, "TEXT_AREA");
+                } else {
+                    System.out.println("Edit Text not selected");
+                    wordButtonsPanel.removeAll();
+                    String inputText = demoTextArea.getText();
+                    ArrayList<String> tokens = Tokenizer.getTokens(inputText);
+                    for (String token : tokens) {
+                        JButton wordButton = new JButton(token);
+                        wordButtonsPanel.add(wordButton);
+                    }
+                    wordButtonsPanel.revalidate();
+                    wordButtonsPanel.repaint();
+                    layout.show(cardPanel, "BUTTONS");
+                }
+            });
 
 
             JButton closeButton = new JButton("Close");
             closeButton.addActionListener(e -> demoFrame.dispose());
 
-            // Panel for layout
-            JPanel panel = new JPanel();
-            panel.setLayout(new FlowLayout());
-            panel.add(scrollPane);
-            panel.add(closeButton);
-            panel.add(runDemoButton);
-            panel.add(editTextCheckBox);
+            JPanel controlPanel = new JPanel(new FlowLayout());
+            controlPanel.add(closeButton);
+            controlPanel.add(runDemoButton);
+            controlPanel.add(editTextCheckBox);
 
-            // Add panel to frame
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(cardPanel, BorderLayout.CENTER);
+            panel.add(controlPanel, BorderLayout.SOUTH);
+
             demoFrame.add(panel);
             demoFrame.setVisible(true);
         }
