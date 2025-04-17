@@ -125,11 +125,7 @@ public class BulkCheck {
                         if (!bounded) { // no bound on number of words
                             LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
                             ArrayList<String> res = utils.search(tmp2[0].trim(), type);
-                            /*
-                            System.out.println("tmp: " + tmp2[0].trim());
-                            System.out.println("type: " + type);
-                            System.out.println("res: " + res);
-                             */
+
                             precision_word = getPrecision(tmp, res);
                             recall_word = getRecall(tmp, res);
                             total_pre += precision_word; // adding the precision

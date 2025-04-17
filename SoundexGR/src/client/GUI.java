@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -115,16 +116,49 @@ class AppController implements ActionListener {
             editTextCheckBox.addActionListener(e -> {
                 boolean selected = editTextCheckBox.isSelected();
                 if (selected) {
-                    System.out.println("Edit Text selected");
+                    //System.out.println("Edit Text selected");
                     layout.show(cardPanel, "TEXT_AREA");
                 } else {
-                    System.out.println("Edit Text not selected");
+                    //System.out.println("Edit Text not selected");
                     wordButtonsPanel.removeAll();
                     String inputText = demoTextArea.getText();
                     ArrayList<String> tokens = Tokenizer.getTokens(inputText);
                     for (String token : tokens) {
                         JButton wordButton = new JButton(token);
                         wordButtonsPanel.add(wordButton);
+
+                        wordButton.addActionListener(er -> {
+                                    JFrame wordFrame = new JFrame("Word Info: " + token);
+                                    wordFrame.setSize(400, 200);
+                                    wordFrame.setLocationRelativeTo(null);
+
+                                    String res = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true);
+                                    JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
+                                    for (String matching : DictionaryMatcher.rankedWords) {
+                                        JButton matchingButton = new JButton(matching);
+                                        matchingButton.setBackground(ColorMgr.colorButtonMatch);
+                                        matchingButton.setForeground(Color.black);
+
+                                        matchingButton.addActionListener(err -> {
+                                            String newWord = matchingButton.getText();
+                                            String oldWord = wordButton.getText();
+
+                                            // replaces oldWord in output text with newWord
+                                            String outputText = demoTextArea.getText();
+                                            outputText = outputText.replace(oldWord, newWord);
+                                            demoTextArea.setText(outputText);
+
+                                            wordButton.setText(newWord);
+                                        });
+
+                                        buttonsMatchingPanel.add(matchingButton);
+                                    }
+
+                                    wordFrame.add(buttonsMatchingPanel);
+                                    wordFrame.setVisible(true);
+                                }
+
+                        );
                     }
                     wordButtonsPanel.revalidate();
                     wordButtonsPanel.repaint();
