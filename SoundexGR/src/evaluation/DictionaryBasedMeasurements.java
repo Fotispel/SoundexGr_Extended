@@ -270,9 +270,9 @@ public class DictionaryBasedMeasurements {
             // If the file index was found, calculate the length
             case ("Real-time length calculation"):
                 if (File_index != -1) {
-                    System.out.println("File index: " + File_index);
-                    System.out.println("Doc name: " + Dashboard.getSelectedDatasetFile());
-                    System.out.println("Length: " + length_per_DocName.get(Dashboard.getSelectedDatasetFile()));
+                    //System.out.println("File index: " + File_index);
+                    //System.out.println("Doc name: " + Dashboard.getSelectedDatasetFile());
+                    //System.out.println("Length: " + length_per_DocName.get(Dashboard.getSelectedDatasetFile()));
                     int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
                     Dashboard.appSoundexCodeLen = length; // Set length
                     return length;
@@ -286,15 +286,15 @@ public class DictionaryBasedMeasurements {
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
-                    Dashboard.appSoundexCodeLen = 3;
-                } else if (numWords <= 1000) {
                     Dashboard.appSoundexCodeLen = 4;
+                } else if (numWords <= 1000) {
+                    Dashboard.appSoundexCodeLen = 7;
                 } else if (numWords <= 2000) {
-                    Dashboard.appSoundexCodeLen = 5;
+                    Dashboard.appSoundexCodeLen = 8;
                 } else if (numWords <= 3000) {
-                    Dashboard.appSoundexCodeLen = 6;
+                    Dashboard.appSoundexCodeLen = 11;
                 } else {
-                    Dashboard.appSoundexCodeLen = 6;
+                    Dashboard.appSoundexCodeLen = 12;
                 }
                 return Dashboard.appSoundexCodeLen;
             case ("Hybrid method i-ii"):

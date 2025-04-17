@@ -167,7 +167,7 @@ public class DictionaryMatcher {
 
 
         return output;
-		
+
 		/*
 		if (wordsHavingTheSameCode!=null) {
 			for (String w: wordsHavingTheSameCode) {
@@ -176,7 +176,7 @@ public class DictionaryMatcher {
 			}
 			output+="\n";
 		} else output +="No word with tha code was found.\n";
-		
+
 		retun lala
 		*/
     }
