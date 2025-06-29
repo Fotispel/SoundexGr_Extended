@@ -99,13 +99,15 @@ class AppController implements ActionListener {
                 ArrayList<String> tokens = Tokenizer.getTokens(inputText);
 
                 for (String token : tokens) {
+                    System.out.println("Token: " + token);
                     if (token.length() < 3) {
+                        System.out.println("Token too short: " + token);
                         outputText.append(token).append(" ");
                         continue;
                     }
 
                     String output = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true) + "\n";
-                    System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
+                    //System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
                     outputText.append(DictionaryMatcher.FirstMatch).append(" ");
                 }
 

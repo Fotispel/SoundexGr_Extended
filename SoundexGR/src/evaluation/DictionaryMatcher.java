@@ -69,7 +69,6 @@ public class DictionaryMatcher {
      * @return
      */
     public static Map<String, Integer> RankByEditDistance(String word, Set<String> wordsToRank) {
-        FirstMatchFound = false;
         Map<String, Integer> wordsAndDists = new HashMap<>();
         for (String candidateword : wordsToRank) {
             wordsAndDists.put(candidateword, EditDistance.EditDistDP(word, candidateword));
@@ -88,8 +87,7 @@ public class DictionaryMatcher {
         if (!sorted.isEmpty() && !FirstMatchFound) {
             FirstMatch = sorted.keySet().iterator().next();
             FirstMatchFound = true;
-        }
-        else if (!FirstMatchFound) // if the map is empty
+        } else if (!FirstMatchFound) // if the map is empty
             FirstMatch = "";
 
         return sorted;
@@ -106,19 +104,25 @@ public class DictionaryMatcher {
      */
 
     public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
-        System.out.println("Word for matchings: " + word);
+        FirstMatchFound = false;
+
         String currentDir = System.getProperty("user.dir");
         String dictResourcePlace;
         if (!isRunningDemo)
             dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
-        else
+        else {
             dictResourcePlace = currentDir + "\\Resources\\dictionaries\\EN-winedt\\gr.dic";
+            //SoundexGRExtra.LengthEncoding = 8;
+            //System.out.println("Default code length for demo: " + SoundexGRExtra.LengthEncoding);
+        }
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
         String output = "";
         //A. Check if word exists in the dictionary
         if (lookup(word)) { // if it exists
+            FirstMatch = word;
+            FirstMatchFound = true;
             return "The word \"" + word + "\" exists in the dictionary.";
         } else {
             output = "APPROXIMATE MATCHES FOR " + word + "\n";
@@ -133,7 +137,7 @@ public class DictionaryMatcher {
         codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
         SoundexGRExtra.LengthEncoding = codeLength;
         String wcode = SoundexGRExtra.encode(word);
-        System.out.println("Code length: " + codeLength + " for word: " + word + " with code: " + wcode);
+        //System.out.println("Code length: " + codeLength + " for word: " + word + " with code: " + wcode);
 
         String path_to_selected_dataset = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_to_selected_dataset);
@@ -163,7 +167,7 @@ public class DictionaryMatcher {
         Set<String> matchesByED = getDicWordByEditDist(word, K);
         output += matchesByED.size() + " matches\n";
         //System.out.println("\n>>>"+getDicWordByEditDist(word,K));
-        String ranked =  RankByEditDistance(word, matchesByED).toString();
+        String ranked = RankByEditDistance(word, matchesByED).toString();
         output += ranked;
         rankedWords = new HashSet<>(RankByEditDistance(word, matchesByED).keySet().stream().limit(10).collect(Collectors.toList()));
         output += "\n";

@@ -88,7 +88,7 @@ public class BulkCheck {
      */
     public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
         boolean bounded = maxWordNum != 0;  // true if the max num of words should be applied
-
+        Set<String> seenWords = new HashSet<>();    //words that we have already seen (to avoid duplicates)
         String line;
 
         //FileWriter fr = new FileWriter(fileToWrite); // opens the file to write  (currently does not write anything)
@@ -106,7 +106,7 @@ public class BulkCheck {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
                 for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
-                    // reading the eval collection
+                    seenWords.clear();
                     SoundexGRExtra.LengthEncoding = length_for_testing;
                     counter_words = 0;
 
@@ -116,7 +116,11 @@ public class BulkCheck {
                     FileReader fl = new FileReader(misspellings_path);
                     BufferedReader bfr = new BufferedReader(fl);
 
+
                     while ((line = bfr.readLine()) != null) {
+                        String word = line.split(",")[0].trim();
+                        if (seenWords.contains(word)) continue;
+                        seenWords.add(word);
                         counter_words++;
 
                         String[] tmp2 = line.split(","); // reading the tokens of a line
@@ -167,6 +171,8 @@ public class BulkCheck {
                         max_f_score = avg_f_score;
                         length_for_max_f_score = length_for_testing;
                     }
+
+                    System.out.println("Length: " + length_for_testing + " Avg F-score: " + avg_f_score);
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
@@ -299,7 +305,7 @@ public class BulkCheck {
 
         final float K = 1.5f; // Predefined optimal size of the list
 
-        float[] avg_list_size = new float[10];
+        float[] avg_list_size = new float[30];
 
         // Calculate average list size for each length
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
