@@ -25,7 +25,7 @@ import SoundexGR.SoundexGRExtra;
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
 public class DictionaryMatcher {
-    public static Set<String> rankedWords = new HashSet<>();
+    public static List<String> rankedWords = new ArrayList<>();
     public static String FirstMatch = "";
     private static boolean FirstMatchFound = false;
 
@@ -169,7 +169,10 @@ public class DictionaryMatcher {
         //System.out.println("\n>>>"+getDicWordByEditDist(word,K));
         String ranked = RankByEditDistance(word, matchesByED).toString();
         output += ranked;
-        rankedWords = new HashSet<>(RankByEditDistance(word, matchesByED).keySet().stream().limit(10).collect(Collectors.toList()));
+        rankedWords = RankByEditDistance(word, matchesByED)
+                .keySet().stream()
+                .limit(10)
+                .collect(Collectors.toList());
         output += "\n";
 
 
