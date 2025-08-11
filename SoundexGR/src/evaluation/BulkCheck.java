@@ -231,7 +231,7 @@ public class BulkCheck {
         long end = System.nanoTime();
         long total = end - start;
 
-        double elapsedTime = (double) total / 1000 * 1000 * 1000;
+        double elapsedTime = (double) total / (1000 * 1000 * 1000);
         System.out.println("Elapsed time: " + elapsedTime);
 
 
