@@ -398,21 +398,22 @@ public class BulkCheck {
                 }
             }
         }
-// Στο τέλος του HybridMethod_execution, αφού βρούμε το optimal_length:
+
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-// Υπολογισμός precision, recall και F1
+        print_precision_recall_f1(misspellings_path);
+    }
+
+    void print_precision_recall_f1(String misspellings_path) throws IOException {
         float precision = calculatePrecision(misspellings_path);
         float recall = calculateRecall(misspellings_path);
         float f1 = (precision + recall > 0) ? 2 * ((precision * recall) / (precision + recall)) : 0;
 
         System.out.println("Precision: " + precision);
         System.out.println("Recall: " + recall);
-        System.out.println("F1-score: " + f1);
-
-
+        System.out.println("F-score: " + f1);
     }
 
 
@@ -422,7 +423,6 @@ public class BulkCheck {
      */
 
     public static void performExperimentsForDatasetSizes() {
-        //MeasurementsWriter initialization and header
         mw = new MeasurementsWriter("Resources/measurements/currentMeasurements.csv");
         mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
 
