@@ -243,14 +243,70 @@ public class BulkCheck {
 
         /*
         System.out.println("\tElapsed time     : " + elapsedTime);
-        System.out.println("\tAverage Precision: " + avgPrecision); 
-        System.out.println("\tAverage Recall   : " + avgRecall); 
+        System.out.println("\tAverage Precision: " + avgPrecision);
+        System.out.println("\tAverage Recall   : " + avgRecall);
         System.out.println("\tF-Measure        : " + avgFmeasure);
         System.out.println("\tNum of words checked: " + numOfWords);
         */
 
         //fr.close();  // closes the output file
     }
+
+
+    private float calculatePrecision(String misspellings_path) throws IOException {
+        int truePositives = 0;
+        int falsePositives = 0;
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
+            String line;
+            while ((line = bfr.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length < 2) continue; // skip αν δεν έχει correct λέξη
+
+                String misspelled = parts[0].trim();
+                String correct = parts[1].trim();
+
+                String predicted = SoundexGRExtra.encode(misspelled);
+                String predictedCorrect = SoundexGRExtra.encode(correct);
+
+                if (predicted.equals(predictedCorrect)) {
+                    truePositives++;
+                } else {
+                    falsePositives++;
+                }
+            }
+        }
+        return (truePositives + falsePositives) > 0 ?
+                (float) truePositives / (truePositives + falsePositives) : 0;
+    }
+
+    private float calculateRecall(String misspellings_path) throws IOException {
+        int truePositives = 0;
+        int falseNegatives = 0;
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
+            String line;
+            while ((line = bfr.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length < 2) continue; // skip αν δεν έχει correct λέξη
+
+                String misspelled = parts[0].trim();
+                String correct = parts[1].trim();
+
+                String predicted = SoundexGRExtra.encode(misspelled);
+                String predictedCorrect = SoundexGRExtra.encode(correct);
+
+                if (predicted.equals(predictedCorrect)) {
+                    truePositives++;
+                } else {
+                    falseNegatives++;
+                }
+            }
+        }
+        return (truePositives + falseNegatives) > 0 ?
+                (float) truePositives / (truePositives + falseNegatives) : 0;
+    }
+
 
     public void HybridMethod_execution(int file_index, String misspellings_path, int[] lengthsForTesting) throws IOException {
         String docName = Dashboard.getSelectedDatasetFile();
@@ -342,9 +398,21 @@ public class BulkCheck {
                 }
             }
         }
+// Στο τέλος του HybridMethod_execution, αφού βρούμε το optimal_length:
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
+
+// Υπολογισμός precision, recall και F1
+        float precision = calculatePrecision(misspellings_path);
+        float recall = calculateRecall(misspellings_path);
+        float f1 = (precision + recall > 0) ? 2 * ((precision * recall) / (precision + recall)) : 0;
+
+        System.out.println("Precision: " + precision);
+        System.out.println("Recall: " + recall);
+        System.out.println("F1-score: " + f1);
+
+
     }
 
 
