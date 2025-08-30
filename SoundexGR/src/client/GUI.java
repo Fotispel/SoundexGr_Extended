@@ -98,6 +98,7 @@ class AppController implements ActionListener {
 
                 ArrayList<String> tokens = Tokenizer.getTokens(inputText);
 
+                System.out.println("Length for Demo: " + Dashboard.getAppSoundexCodeLen());
                 for (String token : tokens) {
                     System.out.println("Token: " + token);
                     if (token.length() < 3) {

@@ -75,6 +75,20 @@ public class BulkCheck {
         return counter / (float) exp.size();
     }
 
+
+    /**
+     * A class to store a query token and its misspellings
+     **/
+    private static class Entry {
+        String queryToken;
+        LinkedHashSet<String> misspellings;
+
+        Entry(String q, LinkedHashSet<String> m) {
+            queryToken = q;
+            misspellings = m;
+        }
+    }
+
     /**
      * It computes precision/recall/f-measure
      *
@@ -87,92 +101,79 @@ public class BulkCheck {
      * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
      */
     public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
-        boolean bounded = maxWordNum != 0;  // true if the max num of words should be applied
-        Set<String> seenWords = new HashSet<>();    //words that we have already seen (to avoid duplicates)
-        String line;
-
         //FileWriter fr = new FileWriter(fileToWrite); // opens the file to write  (currently does not write anything)
-        float total_pre = 0; // initialization of total precision
-        float total_rec = 0; // initialization of total recall
-        int counter = 0; // counts the number of buckets (i.e. the number of lines in the file)
-        int counter_words = 0; // counts the number of words
+        float total_pre = 0;
+        float total_rec = 0;
+        int counter_words = 0;
 
         float max_f_score = -1;
         int length_for_max_f_score = -1;
-        int numOfWords = 0; // ytz: 2021 for counting the words
+        int numOfWords = 0;
         long start = System.nanoTime();
 
         switch (Dashboard.getSelectedMethod()) {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
+
+                boolean bounded = maxWordNum != 0;
+                Set<String> seenWords = new HashSet<>();
+
+                List<Entry> entries = new ArrayList<>();
+                try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
+                    String line;
+                    while ((line = bfr.readLine()) != null) {
+                        String[] tokens = line.split(",");
+                        if (tokens.length == 0) continue;
+
+                        String first = tokens[0].trim();
+                        if (seenWords.contains(first)) continue;
+                        seenWords.add(first);
+
+                        LinkedHashSet<String> expected = new LinkedHashSet<>();
+                        for (String t : tokens) {
+                            expected.add(t.trim());
+                        }
+                        entries.add(new Entry(first, expected));
+                    }
+                }
+
+
                 for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
                     SoundexGRExtra.LengthEncoding = length_for_testing;
                     counter_words = 0;
 
-                    float avg_f_score = 0;
-                    float total_f_score = 0;
-
-                    FileReader fl = new FileReader(misspellings_path);
-                    BufferedReader bfr = new BufferedReader(fl);
+                    numOfWords = 0;
+                    total_pre = 0;
+                    total_rec = 0;
 
 
-                    while ((line = bfr.readLine()) != null) {
-                        String word = line.split(",")[0].trim();
-                        if (seenWords.contains(word)) continue;
-                        seenWords.add(word);
+                    for (Entry e : entries) {
+                        if (bounded && numOfWords >= maxWordNum) break;
+
+                        ArrayList<String> res = utils.search(e.queryToken, type);
+
+                        float precision_word = getPrecision(e.misspellings, res);
+                        float recall_word = getRecall(e.misspellings, res);
+
+                        total_pre += precision_word;
+                        total_rec += recall_word;
                         counter_words++;
 
-                        String[] tmp2 = line.split(","); // reading the tokens of a line
-
-                        float precision_word = -1, recall_word = -1, f_score_word;
-                        if (!bounded) { // no bound on number of words
-                            LinkedHashSet<String> tmp = new LinkedHashSet<>(Arrays.asList(tmp2)); // adding them to a hashset
-                            ArrayList<String> res = utils.search(tmp2[0].trim(), type);
-
-                            precision_word = getPrecision(tmp, res);
-                            recall_word = getRecall(tmp, res);
-                            total_pre += precision_word; // adding the precision
-                            total_rec += recall_word; // adding the recall
-                            counter++;
-                            numOfWords += tmp2.length;
-                        } else { // bounded number of word
-                            if (numOfWords < maxWordNum) { //
-                                LinkedHashSet<String> tmp = new LinkedHashSet<>();
-                                for (String s : tmp2) {
-                                    if (numOfWords < maxWordNum) {
-                                        tmp.add(s);
-                                        numOfWords++;
-                                    }
-                                }
-                                ArrayList<String> res = utils.search(tmp2[0].trim(), type);
-
-                                precision_word = getPrecision(tmp, res);
-                                recall_word = getRecall(tmp, res);
-                                total_pre += precision_word; // adding the precision
-                                total_rec += recall_word; // adding the recall
-                                counter++;
-                            } else { // have read the max words
-
-                            }
+                        if (bounded) {
+                            numOfWords += e.misspellings.size();
                         }
-                        f_score_word = 2 * precision_word * recall_word / (precision_word + recall_word);
-                        total_f_score += f_score_word;
-                    }
-                    bfr.close();
-
-                    if (counter_words == 0) {
-                        throw new RuntimeException("No words in the given document that can be used for evaluation");
-                    } else {
-                        avg_f_score = total_f_score / counter_words;
                     }
 
-                    if (avg_f_score > max_f_score) {
-                        max_f_score = avg_f_score;
+                    float avgPrecision = total_pre / counter_words;
+                    float avgRecall = total_rec / counter_words;
+                    float avgFmeasure = 2 * avgPrecision * avgRecall / (avgPrecision + avgRecall);
+                    //System.out.println("F-measure: " + avgFmeasure + " for length " + length_for_testing + " with " + counter_words + " words");
+
+                    if (avgFmeasure > max_f_score) {
+                        max_f_score = avgFmeasure;
                         length_for_max_f_score = length_for_testing;
                     }
-
-                    System.out.println("Length: " + length_for_testing + " Avg F-score: " + avg_f_score);
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
@@ -182,21 +183,19 @@ public class BulkCheck {
                 length_per_docSize.put(length_for_max_f_score, Dashboard.getNumberOfWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
                 //System.out.println("Length per docSize: " + length_per_docSize);
 
-                float avgPrecision = total_pre / counter;    // computing the avg precision
-                float avgRecall = total_rec / counter;        // computing the avg recall
-                float avgFmeasure = 2 * (total_pre / counter) * (total_rec / counter) / ((total_pre / counter) + (total_rec / counter));
 
                 if (mw == null) {
                     String filename = "Resources/measurements/currentMeasurements.csv";
                     mw = new MeasurementsWriter(filename);
                     mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
                 }
-
-
-                mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
+                /*
                 mw.write(avgPrecision + ",");
                 mw.write(avgRecall + ",");
                 mw.write(avgFmeasure + "\n");
+                mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
+                 */
+
                 //System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
                 break;
             case "Predefined length":
@@ -403,16 +402,16 @@ public class BulkCheck {
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        print_precision_recall_f1(misspellings_path);
+        print_precision_recall_f1_for_hybrid(misspellings_path);
     }
 
-    void print_precision_recall_f1(String misspellings_path) throws IOException {
+    void print_precision_recall_f1_for_hybrid(String misspellings_path) throws IOException {
         float precision = calculatePrecision(misspellings_path);
         float recall = calculateRecall(misspellings_path);
-        float f1 = (precision + recall > 0) ? 2 * ((precision * recall) / (precision + recall)) : 0;
+        float f1 = 2 * precision * recall / (precision + recall);
 
-        System.out.println("Precision: " + precision);
-        System.out.println("Recall: " + recall);
+        //System.out.println("Precision: " + precision);
+        //System.out.println("Recall: " + recall);
         System.out.println("F-score: " + f1);
     }
 
