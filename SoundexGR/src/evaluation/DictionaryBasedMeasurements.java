@@ -324,12 +324,10 @@ public class DictionaryBasedMeasurements {
         try {
             String dictResourcePlace;
 
-            // Use FileInputStream instead of getResourceAsStream
-            String currentDir = System.getProperty("user.dir");
             if (path == null) {
-                dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+                dictResourcePlace = System.getProperty("user.dir") + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
             } else {
-                dictResourcePlace = currentDir + path;
+                dictResourcePlace = path;
             }
             setDictionaryLocation(dictResourcePlace);
             //System.out.printf("Reading dictionary from %s\n", placeDict);

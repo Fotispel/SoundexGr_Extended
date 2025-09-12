@@ -18,8 +18,6 @@ import client.Dashboard;
 import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
-
-import javax.print.Doc;
 //import org.apache.commons.text.similarity.LevenshteinDistance;
 
 /**
@@ -100,7 +98,7 @@ public class BulkCheck {
      * @throws FileNotFoundException
      * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
      */
-    public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum, int file_index) throws FileNotFoundException, IOException {
+    public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum) throws FileNotFoundException, IOException {
         //FileWriter fr = new FileWriter(fileToWrite); // opens the file to write  (currently does not write anything)
         float total_pre = 0;
         float total_rec = 0;
@@ -204,7 +202,7 @@ public class BulkCheck {
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
-                HybridMethod_execution(file_index, misspellings_path, null);
+                HybridMethod_execution(misspellings_path, null, utils, type);
                 break;
 
             case "Hybrid method ii-iii":
@@ -220,7 +218,7 @@ public class BulkCheck {
                     lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
                 }
 
-                HybridMethod_execution(file_index, misspellings_path, lengthsForTesting);
+                HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type);
                 break;
 
             default:
@@ -251,74 +249,23 @@ public class BulkCheck {
         //fr.close();  // closes the output file
     }
 
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type) throws IOException {
+        Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
-    private float calculatePrecision(String misspellings_path) throws IOException {
-        int truePositives = 0;
-        int falsePositives = 0;
-
-        try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length < 2) continue; // skip αν δεν έχει correct λέξη
-
-                String misspelled = parts[0].trim();
-                String correct = parts[1].trim();
-
-                String predicted = SoundexGRExtra.encode(misspelled);
-                String predictedCorrect = SoundexGRExtra.encode(correct);
-
-                if (predicted.equals(predictedCorrect)) {
-                    truePositives++;
-                } else {
-                    falsePositives++;
-                }
-            }
-        }
-        return (truePositives + falsePositives) > 0 ?
-                (float) truePositives / (truePositives + falsePositives) : 0;
-    }
-
-    private float calculateRecall(String misspellings_path) throws IOException {
-        int truePositives = 0;
-        int falseNegatives = 0;
-
-        try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length < 2) continue; // skip αν δεν έχει correct λέξη
-
-                String misspelled = parts[0].trim();
-                String correct = parts[1].trim();
-
-                String predicted = SoundexGRExtra.encode(misspelled);
-                String predictedCorrect = SoundexGRExtra.encode(correct);
-
-                if (predicted.equals(predictedCorrect)) {
-                    truePositives++;
-                } else {
-                    falseNegatives++;
-                }
-            }
-        }
-        return (truePositives + falseNegatives) > 0 ?
-                (float) truePositives / (truePositives + falseNegatives) : 0;
-    }
-
-
-    public void HybridMethod_execution(int file_index, String misspellings_path, int[] lengthsForTesting) throws IOException {
         String docName = Dashboard.getSelectedDatasetFile();
         String line;
-        String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
+        String projectRoot = System.getProperty("user.dir");
+        String path_toWordsFile = projectRoot + "\\Resources\\collection_words\\" + docName + "_words.txt";
+
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
             lengthsForTesting = new int[]{2, 3, 4, 5, 6, 7, 8, 9};
         }
 
+        List<Integer> sizes = new ArrayList<>();
         for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
-            SoundexGRExtra.LengthEncoding = length_word; // setting the length for encoding
+            SoundexGRExtra.LengthEncoding = length_word;
 
             FileReader fl = new FileReader(misspellings_path);
             BufferedReader bfr = new BufferedReader(fl);
@@ -330,6 +277,8 @@ public class BulkCheck {
                     Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_toWordsFile);
 
                     if (wordsHavingTheSameCode != null) {
+                        sizes.add(wordsHavingTheSameCode.size()); //for K calculation
+
                         // Add the words to the map using wcode as key
                         List<Set<String>> words;
                         if (SameCodeWords_per_length.containsKey(length_word)) {
@@ -345,8 +294,25 @@ public class BulkCheck {
                     checked_codes.add(wcode);
                 }
             }
+            listSizesPerLength.put(length_word, sizes);
+
             bfr.close();
         }
+
+        // average same code list size for K calculation
+        float totalSum = 0;
+        int count = 0;
+        for (int length : listSizesPerLength.keySet()) {
+            sizes = listSizesPerLength.get(length);
+            for (int s : sizes) {
+                totalSum += s;
+                count++;
+            }
+        }
+        float K = count > 0 ? totalSum / count : 1.5f;
+        System.out.println("Calculated K: " + K);
+
+
         // Print words grouped by their wcode
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
@@ -357,8 +323,6 @@ public class BulkCheck {
                 //System.out.println("No words with length " + length);
             }
         }
-
-        final float K = 1.5f; // Predefined optimal size of the list
 
         float[] avg_list_size = new float[30];
 
@@ -399,19 +363,49 @@ public class BulkCheck {
         }
 
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
+
+
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        print_precision_recall_f1_for_hybrid(misspellings_path);
+        print_precision_recall_f1_for_hybrid(misspellings_path, utils, type);
     }
 
-    void print_precision_recall_f1_for_hybrid(String misspellings_path) throws IOException {
-        float precision = calculatePrecision(misspellings_path);
-        float recall = calculateRecall(misspellings_path);
-        float f1 = 2 * precision * recall / (precision + recall);
+    void print_precision_recall_f1_for_hybrid(String misspellings_path, Utilities utils, String type) throws IOException {
+        float totalPrecision = 0;
+        float totalRecall = 0;
+        int counter = 0;
 
-        //System.out.println("Precision: " + precision);
-        //System.out.println("Recall: " + recall);
+        try (BufferedReader bfr = new BufferedReader(new FileReader(misspellings_path))) {
+            String line;
+            while ((line = bfr.readLine()) != null) {
+                String[] tokens = line.split(",");
+                if (tokens.length == 0) continue;
+
+                LinkedHashSet<String> expected = new LinkedHashSet<>();
+                for (String t : tokens) {
+                    expected.add(t.trim());
+                }
+
+                String query = tokens[0].trim();
+
+                ArrayList<String> res = utils.search(query, type);
+
+                float p = getPrecision(expected, res);
+                float r = getRecall(expected, res);
+
+                totalPrecision += p;
+                totalRecall += r;
+                counter++;
+            }
+        }
+
+        float avgPrecision = counter > 0 ? totalPrecision / counter : 0;
+        float avgRecall = counter > 0 ? totalRecall / counter : 0;
+        float f1 = (avgPrecision + avgRecall > 0) ? (2 * avgPrecision * avgRecall) / (avgPrecision + avgRecall) : 0;
+
+        //System.out.println("Precision: " + avgPrecision);
+        //System.out.println("Recall: " + avgRecall);
         System.out.println("F-score: " + f1);
     }
 
@@ -522,7 +516,7 @@ public class BulkCheck {
                                     datasetFile.substring(datasetFile.lastIndexOf('/') + 1); // the prefix + the last part of the dataset filename
 
                     //System.out.println(">>>>>"+outputFileName);
-                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum, 0);
+                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum);
                     System.out.println(""); //-------------------------------------------------");
                 }
                 utils.clear();
@@ -568,7 +562,7 @@ public class BulkCheck {
                 System.out.println("[" + datasetFile + "]");
                 for (String optionToEvaluate : OptionsToEvaluate) { // for each code generation option
                     System.out.println("Results  over " + datasetFile + " with the option *" + optionToEvaluate + "*:");
-                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFile, 0, 0);
+                    bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFile, 0);
                     System.out.println("-------------------------------------------------");
                 }
                 utils.clear();
@@ -682,7 +676,6 @@ public class BulkCheck {
         Map<Document, Double> scores = new HashMap<Document, Double>();
 
         int number_of_datasets = DatasetFiles.length;
-        int file_index = 0;
 
         try {
             for (String FileWords : datasetFileWords) {
@@ -710,8 +703,7 @@ public class BulkCheck {
             String SelectedDatasetFile = "Resources//collection_words//" + Dashboard.getSelectedDatasetFile() + "_words.txt";
             System.out.println("\n[" + SelectedDatasetFile + "]: ");
             utils.readFile(misspellingFile);  // Retrieve the file at index j
-            bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0, file_index);
-            file_index++;
+            bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
             Toolkit.getDefaultToolkit().beep();
             utils.clear();
             //}
