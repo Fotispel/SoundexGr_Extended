@@ -14,10 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -98,6 +95,14 @@ class AppController implements ActionListener {
 
                 ArrayList<String> tokens = Tokenizer.getTokens(inputText);
 
+                int pre_length = Dashboard.getAppSoundexCodeLen();
+                String pre_selected_file = Dashboard.getSelectedDatasetFile();
+
+                dicToTxt();
+                Dashboard.setSelectedMethod("Predefined length");
+                Dashboard.setSelectedDatasetFile("gr");
+                BulkCheck.execute_selected_method();
+
                 System.out.println("Length for Demo: " + Dashboard.getAppSoundexCodeLen());
                 for (String token : tokens) {
                     System.out.println("Token: " + token);
@@ -111,6 +116,9 @@ class AppController implements ActionListener {
                     //System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
                     outputText.append(DictionaryMatcher.FirstMatch).append(" ");
                 }
+
+                Dashboard.setAppSoundexCodeLen(pre_length);
+                Dashboard.setSelectedDatasetFile(pre_selected_file);
 
                 System.out.println("Demo output: " + outputText);
                 demoTextArea.setText(outputText.toString());
@@ -209,6 +217,11 @@ class AppController implements ActionListener {
                         SoundexGRExtra.encode(token)
                 );
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -227,6 +240,11 @@ class AppController implements ActionListener {
                         SoundexGRSimple.encode(token)
                 );
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -244,6 +262,11 @@ class AppController implements ActionListener {
                         SoundexGRExtra.phoneticTrascription(token)
                 );
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -266,6 +289,11 @@ class AppController implements ActionListener {
                 );
                 outputStr = outputStr.concat("\n" + output);
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -286,6 +314,11 @@ class AppController implements ActionListener {
                 }
                 output += "\n";
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -302,11 +335,35 @@ class AppController implements ActionListener {
                 //output += token + ":";
                 output += DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), false) + "\n";
             }
+            
+            // Add distinct word count to console output
+            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
+            System.out.println("Distinct words: " + distinctWords);
+            
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
 
     } // actionPerformed
+
+
+    void dicToTxt() {
+        File dicFile = new File("Resources/dictionaries/EN-winedt/gr.dic");
+        File txtFile = new File("Resources/collection/gr.txt");
+
+        try (BufferedReader br = new BufferedReader(new FileReader(dicFile));
+             BufferedWriter bw = new BufferedWriter(new FileWriter(txtFile))) {
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                bw.write(line);
+                bw.newLine();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 public class GUI {

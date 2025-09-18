@@ -282,7 +282,7 @@ public class DictionaryBasedMeasurements {
                     return -1; // or some default value
                 }
             case ("Predefined length"):
-                int numWords = Dashboard.getNumberOfWords_of_SelectedDatasetFile();
+                int numWords = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
@@ -325,10 +325,13 @@ public class DictionaryBasedMeasurements {
             String dictResourcePlace;
 
             if (path == null) {
-                dictResourcePlace = System.getProperty("user.dir") + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+                dictResourcePlace = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
             } else {
                 dictResourcePlace = path;
             }
+
+            dictResourcePlace = System.getProperty("user.dir") + dictResourcePlace;
+
             setDictionaryLocation(dictResourcePlace);
             //System.out.printf("Reading dictionary from %s\n", placeDict);
             FileInputStream inDict = new FileInputStream(placeDict);

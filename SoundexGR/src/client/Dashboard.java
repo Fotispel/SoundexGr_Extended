@@ -5,6 +5,7 @@ import SoundexGR.SoundexGRSimple;
 import evaluation.BulkCheck;
 import evaluation.DictionaryBasedMeasurements;
 import evaluation.DictionaryMatcher;
+import evaluation.Tokenizer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +19,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.Objects;
+import java.util.*;
 
 import static evaluation.BulkCheck.*;
 
@@ -26,7 +27,7 @@ public class Dashboard extends JFrame {
     AppController apCtlr;
 
     static JTextArea textInputArea;
-    static JTextArea textOutputArea;
+    public static JTextArea textOutputArea;
     static JTextArea consoleOutputArea;
 
     static Dimension textAreaDimension = new Dimension(50, 10);
@@ -129,6 +130,24 @@ public class Dashboard extends JFrame {
             e.printStackTrace();
         }
         return count;
+    }
+
+    public static int getNumberOfDistinctWords_of_SelectedDatasetFile() {
+        File file = new File("Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt");
+        Set<String> words = new HashSet<>();
+
+        try (Scanner sc = new Scanner(file)) {
+            while (sc.hasNext()) {
+                String w = sc.next().trim();
+                if (!w.isEmpty()) {
+                    words.add(w);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return words.size();
     }
 
 

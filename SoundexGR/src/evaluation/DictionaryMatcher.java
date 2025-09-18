@@ -108,19 +108,16 @@ public class DictionaryMatcher {
 
         String currentDir = System.getProperty("user.dir");
         String dictResourcePlace;
-        if (!isRunningDemo)
-            dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
-        else {
-            dictResourcePlace = currentDir + "\\Resources\\dictionaries\\EN-winedt\\gr.dic";
-            //SoundexGRExtra.LengthEncoding = 8;
-            //System.out.println("Default code length for demo: " + SoundexGRExtra.LengthEncoding);
-        }
+
+        dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
         String output = "";
         //A. Check if word exists in the dictionary
-        if (lookup(word)) { // if it exists
+        if (
+
+                lookup(word)) { // if it exists
             FirstMatch = word;
             FirstMatchFound = true;
             return "The word \"" + word + "\" exists in the dictionary.";
@@ -169,10 +166,20 @@ public class DictionaryMatcher {
         //System.out.println("\n>>>"+getDicWordByEditDist(word,K));
         String ranked = RankByEditDistance(word, matchesByED).toString();
         output += ranked;
-        rankedWords = RankByEditDistance(word, matchesByED)
-                .keySet().stream()
-                .limit(10)
-                .collect(Collectors.toList());
+        rankedWords =
+
+                RankByEditDistance(word, matchesByED)
+                        .
+
+                        keySet().
+
+                        stream()
+                                .
+
+                        limit(10)
+                                .
+
+                        collect(Collectors.toList());
         output += "\n";
 
 

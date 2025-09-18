@@ -112,6 +112,10 @@ public class BulkCheck {
         switch (Dashboard.getSelectedMethod()) {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
+                
+                // Add distinct word count to console output
+                int distinctWordsRealTime = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+                System.out.println("Distinct words: " + distinctWordsRealTime);
 
                 boolean bounded = maxWordNum != 0;
                 Set<String> seenWords = new HashSet<>();
@@ -199,15 +203,30 @@ public class BulkCheck {
             case "Predefined length":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
                 System.out.println("Predefined length and optimal length: " + SoundexGRExtra.LengthEncoding);
+                
+                // Add distinct word count to console output
+                int distinctWords = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+                System.out.println("Distinct words: " + distinctWords);
+                
+                //print_precision_recall_f1(misspellings_path, utils, type);
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
+                
+                // Add distinct word count to console output
+                int distinctWordsHybrid1 = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+                System.out.println("Distinct words: " + distinctWordsHybrid1);
+                
                 HybridMethod_execution(misspellings_path, null, utils, type);
                 break;
 
             case "Hybrid method ii-iii":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
                 assert SoundexGRExtra.LengthEncoding != -1; //if length is -1 then there is no suitable code length
+
+                // Add distinct word count to console output
+                int distinctWordsHybrid2 = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+                System.out.println("Distinct words: " + distinctWordsHybrid2);
 
                 int[] lengthsForTesting;
                 if (SoundexGRExtra.LengthEncoding > 2) {
@@ -230,23 +249,6 @@ public class BulkCheck {
 
         double elapsedTime = (double) total / (1000 * 1000 * 1000);
         System.out.println("Elapsed time: " + elapsedTime);
-
-
-        /*
-        if (SoundexGRExtra.LengthEncoding != SoundexGRSimple.LengthEncoding) { // if the config is not correct for experiments
-            throw new RuntimeException("SoundexGRExtra.LengthEncoding!=SoundexGRSimple.LengthEncoding");
-        }
-        */
-
-        /*
-        System.out.println("\tElapsed time     : " + elapsedTime);
-        System.out.println("\tAverage Precision: " + avgPrecision);
-        System.out.println("\tAverage Recall   : " + avgRecall);
-        System.out.println("\tF-Measure        : " + avgFmeasure);
-        System.out.println("\tNum of words checked: " + numOfWords);
-        */
-
-        //fr.close();  // closes the output file
     }
 
     public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type) throws IOException {
@@ -368,10 +370,10 @@ public class BulkCheck {
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        print_precision_recall_f1_for_hybrid(misspellings_path, utils, type);
+        //print_precision_recall_f1(misspellings_path, utils, type);
     }
 
-    void print_precision_recall_f1_for_hybrid(String misspellings_path, Utilities utils, String type) throws IOException {
+    void print_precision_recall_f1(String misspellings_path, Utilities utils, String type) throws IOException {
         float totalPrecision = 0;
         float totalRecall = 0;
         int counter = 0;
@@ -615,9 +617,6 @@ public class BulkCheck {
                         continue;
                     }
 
-                    if (word.length() < 3) {
-                        continue;
-                    }
                     br.write(word + "\n");
                     br_all.write(word + "\n");
                 }
