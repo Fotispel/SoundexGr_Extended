@@ -95,15 +95,7 @@ class AppController implements ActionListener {
 
                 ArrayList<String> tokens = Tokenizer.getTokens(inputText);
 
-                int pre_length = Dashboard.getAppSoundexCodeLen();
-                String pre_selected_file = Dashboard.getSelectedDatasetFile();
 
-                dicToTxt();
-                Dashboard.setSelectedMethod("Predefined length");
-                Dashboard.setSelectedDatasetFile("gr");
-                BulkCheck.execute_selected_method();
-
-                System.out.println("Length for Demo: " + Dashboard.getAppSoundexCodeLen());
                 for (String token : tokens) {
                     System.out.println("Token: " + token);
                     if (token.length() < 3) {
@@ -116,9 +108,6 @@ class AppController implements ActionListener {
                     //System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
                     outputText.append(DictionaryMatcher.FirstMatch).append(" ");
                 }
-
-                Dashboard.setAppSoundexCodeLen(pre_length);
-                Dashboard.setSelectedDatasetFile(pre_selected_file);
 
                 System.out.println("Demo output: " + outputText);
                 demoTextArea.setText(outputText.toString());
@@ -198,7 +187,7 @@ class AppController implements ActionListener {
         if (event.getSource() == Dashboard.codeLenghtsC) {
             int lenBefore = Dashboard.getAppSoundexCodeLen();
             String selected = (String) Dashboard.codeLenghtsC.getSelectedItem();
-            int selectedInt = new Integer(selected);
+            int selectedInt = Integer.parseInt(selected);
             DictionaryBasedMeasurements.invalidateMap();
             Dashboard.setAppSoundexCodeLen(selectedInt); // TODO here it should make refresh (recompute the codes)
             System.out.printf("Code length changed from %d to %d.", lenBefore, Dashboard.getAppSoundexCodeLen());
@@ -217,11 +206,6 @@ class AppController implements ActionListener {
                         SoundexGRExtra.encode(token)
                 );
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -240,11 +224,6 @@ class AppController implements ActionListener {
                         SoundexGRSimple.encode(token)
                 );
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -262,11 +241,6 @@ class AppController implements ActionListener {
                         SoundexGRExtra.phoneticTrascription(token)
                 );
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -289,11 +263,6 @@ class AppController implements ActionListener {
                 );
                 outputStr = outputStr.concat("\n" + output);
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(outputStr);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -314,11 +283,6 @@ class AppController implements ActionListener {
                 }
                 output += "\n";
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
@@ -335,11 +299,6 @@ class AppController implements ActionListener {
                 //output += token + ":";
                 output += DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), false) + "\n";
             }
-            
-            // Add distinct word count to console output
-            int distinctWords = Tokenizer.getDistinctWordCount(Dashboard.textInputArea.getText());
-            System.out.println("Distinct words: " + distinctWords);
-            
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);
         }
