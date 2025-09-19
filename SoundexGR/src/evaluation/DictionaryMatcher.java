@@ -106,8 +106,12 @@ public class DictionaryMatcher {
         String currentDir = System.getProperty("user.dir");
         String dictResourcePlace;
 
-        dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
-                + "_words.txt";
+        if ("All datasets".equals(Dashboard.getSelectedDatasetFile())) {
+            dictResourcePlace = currentDir + "\\Resources\\collection_words\\collection_all_words.dic";
+        } else {
+            dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
+                    + "_words.txt";
+        }
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
@@ -135,8 +139,9 @@ public class DictionaryMatcher {
         // System.out.println("Code length: " + codeLength + " for word: " + word + "
         // with code: " + wcode);
 
-        String path_to_selected_dataset = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
-                + "_words.txt";
+        String path_to_selected_dataset = "All datasets".equals(Dashboard.getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\collection_all_words.dic"
+                : "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
                 path_to_selected_dataset);
         ArrayList<String> matches = new ArrayList<>();

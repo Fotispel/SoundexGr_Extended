@@ -34,7 +34,6 @@ public class BulkCheck {
 
     public static Map<String, Integer> length_per_DocName = new HashMap<>();
 
-
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
 
     /**
@@ -73,7 +72,6 @@ public class BulkCheck {
         return counter / (float) exp.size();
     }
 
-
     /**
      * A class to store a query token and its misspellings
      **/
@@ -93,13 +91,19 @@ public class BulkCheck {
      * @param utils
      * @param misspellings_path the file with the eval collection
      * @param type              the matching (soundex) algorith to be applied
-     * @param fileToWrite       the file to write (currently it just creates the file, it does not store anything there)
-     * @param maxWordNum        max number of words to consider, if 0 no limit is applied
+     * @param fileToWrite       the file to write (currently it just creates the
+     *                          file, it does not store anything there)
+     * @param maxWordNum        max number of words to consider, if 0 no limit is
+     *                          applied
      * @throws FileNotFoundException
-     * @throws IOException           NOTE: the maxWordNum should be considered also in the reading of the file (i.e. in method check)
+     * @throws IOException           NOTE: the maxWordNum should be considered also
+     *                               in the reading of the file (i.e. in method
+     *                               check)
      */
-    public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum) throws FileNotFoundException, IOException {
-        //FileWriter fr = new FileWriter(fileToWrite); // opens the file to write  (currently does not write anything)
+    public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum)
+            throws FileNotFoundException, IOException {
+        // FileWriter fr = new FileWriter(fileToWrite); // opens the file to write
+        // (currently does not write anything)
         float total_pre = 0;
         float total_rec = 0;
         int counter_words = 0;
@@ -121,10 +125,12 @@ public class BulkCheck {
                     String line;
                     while ((line = bfr.readLine()) != null) {
                         String[] tokens = line.split(",");
-                        if (tokens.length == 0) continue;
+                        if (tokens.length == 0)
+                            continue;
 
                         String first = tokens[0].trim();
-                        if (seenWords.contains(first)) continue;
+                        if (seenWords.contains(first))
+                            continue;
                         seenWords.add(first);
 
                         LinkedHashSet<String> expected = new LinkedHashSet<>();
@@ -135,7 +141,6 @@ public class BulkCheck {
                     }
                 }
 
-
                 for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
                     SoundexGRExtra.LengthEncoding = length_for_testing;
@@ -145,9 +150,9 @@ public class BulkCheck {
                     total_pre = 0;
                     total_rec = 0;
 
-
                     for (Entry e : entries) {
-                        if (bounded && numOfWords >= maxWordNum) break;
+                        if (bounded && numOfWords >= maxWordNum)
+                            break;
 
                         ArrayList<String> res = utils.search(e.queryToken, type);
 
@@ -166,7 +171,8 @@ public class BulkCheck {
                     float avgPrecision = total_pre / counter_words;
                     float avgRecall = total_rec / counter_words;
                     float avgFmeasure = 2 * avgPrecision * avgRecall / (avgPrecision + avgRecall);
-                    //System.out.println("F-measure: " + avgFmeasure + " for length " + length_for_testing + " with " + counter_words + " words");
+                    // System.out.println("F-measure: " + avgFmeasure + " for length " +
+                    // length_for_testing + " with " + counter_words + " words");
 
                     if (avgFmeasure > max_f_score) {
                         max_f_score = avgFmeasure;
@@ -174,13 +180,14 @@ public class BulkCheck {
                     }
                 }
 
-                System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with " + counter_words + " words");
+                System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
+                        + counter_words + " words");
 
                 length_per_DocName.put(Dashboard.getSelectedDatasetFile(), length_for_max_f_score);
 
-                length_per_docSize.put(length_for_max_f_score, Dashboard.getNumberOfWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
-                //System.out.println("Length per docSize: " + length_per_docSize);
-
+                length_per_docSize.put(length_for_max_f_score,
+                        Dashboard.getNumberOfWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
+                // System.out.println("Length per docSize: " + length_per_docSize);
 
                 if (mw == null) {
                     String filename = "Resources/measurements/currentMeasurements.csv";
@@ -188,19 +195,21 @@ public class BulkCheck {
                     mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
                 }
                 /*
-                mw.write(avgPrecision + ",");
-                mw.write(avgRecall + ",");
-                mw.write(avgFmeasure + "\n");
-                mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
+                 * mw.write(avgPrecision + ",");
+                 * mw.write(avgRecall + ",");
+                 * mw.write(avgFmeasure + "\n");
+                 * mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
                  */
 
-                //System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords, avgPrecision, avgRecall, avgFmeasure);
+                // System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords,
+                // avgPrecision, avgRecall, avgFmeasure);
                 break;
             case "Predefined length":
-                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
+                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements
+                        .calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
                 System.out.println("Predefined length and optimal length: " + SoundexGRExtra.LengthEncoding);
 
-                //print_precision_recall_f1(misspellings_path, utils, type);
+                // print_precision_recall_f1(misspellings_path, utils, type);
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
@@ -209,16 +218,21 @@ public class BulkCheck {
                 break;
 
             case "Hybrid method ii-iii":
-                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
-                assert SoundexGRExtra.LengthEncoding != -1; //if length is -1 then there is no suitable code length
+                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements
+                        .calculateSuggestedCodeLen("Predefined length");
+                assert SoundexGRExtra.LengthEncoding != -1; // if length is -1 then there is no suitable code length
 
                 int[] lengthsForTesting;
                 if (SoundexGRExtra.LengthEncoding > 2) {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 2, SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
+                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding - 2,
+                            SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
+                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2 };
                 } else if (SoundexGRExtra.LengthEncoding > 1) {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
+                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
+                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2 };
                 } else {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
+                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1,
+                            SoundexGRExtra.LengthEncoding + 2 };
                 }
 
                 HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type);
@@ -229,8 +243,7 @@ public class BulkCheck {
         }
 
         int distinctWordsForSelectedDataset = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
-        System.out.println("Distinct words with length over 2 characters: " + distinctWordsForSelectedDataset);
-
+        System.out.println("Distinct words with length over two characters: " + distinctWordsForSelectedDataset);
 
         long end = System.nanoTime();
         long total = end - start;
@@ -239,7 +252,8 @@ public class BulkCheck {
         System.out.println("Elapsed time: " + elapsedTime);
     }
 
-    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type) throws IOException {
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
+            throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
         String docName = Dashboard.getSelectedDatasetFile();
@@ -250,11 +264,12 @@ public class BulkCheck {
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{2, 3, 4, 5, 6, 7, 8, 9};
+            lengthsForTesting = new int[] { 2, 3, 4, 5, 6, 7, 8, 9 };
         }
 
         List<Integer> sizes = new ArrayList<>();
-        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
+        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length
+                - 1]; length_word++) {
             SoundexGRExtra.LengthEncoding = length_word;
 
             FileReader fl = new FileReader(misspellings_path);
@@ -264,10 +279,11 @@ public class BulkCheck {
                 String word = line.split(",")[0];
                 String wcode = SoundexGRExtra.encode(word);
                 if (!checked_codes.contains(wcode)) {
-                    Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_toWordsFile);
+                    Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
+                            path_toWordsFile);
 
                     if (wordsHavingTheSameCode != null) {
-                        sizes.add(wordsHavingTheSameCode.size()); //for K calculation
+                        sizes.add(wordsHavingTheSameCode.size()); // for K calculation
 
                         // Add the words to the map using wcode as key
                         List<Set<String>> words;
@@ -278,7 +294,8 @@ public class BulkCheck {
                         }
                         words.add(wordsHavingTheSameCode);
                         SameCodeWords_per_length.put(length_word, words);
-                        //System.out.println("Length: " + length_word + " SameCodeWords_per_length: " + SameCodeWords_per_length.get(length_word));
+                        // System.out.println("Length: " + length_word + " SameCodeWords_per_length: " +
+                        // SameCodeWords_per_length.get(length_word));
                     }
 
                     checked_codes.add(wcode);
@@ -302,15 +319,14 @@ public class BulkCheck {
         float K = count > 0 ? totalSum / count : 1.5f;
         System.out.println("Calculated K: " + K);
 
-
         // Print words grouped by their wcode
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 List<Set<String>> words = SameCodeWords_per_length.get(length);
-                //System.out.println("Words with length " + length + ": " + words);
+                // System.out.println("Words with length " + length + ": " + words);
 
             } else {
-                //System.out.println("No words with length " + length);
+                // System.out.println("No words with length " + length);
             }
         }
 
@@ -332,9 +348,10 @@ public class BulkCheck {
                 avg_list_size[length] = avgSize;
 
                 // Print the average size for this encoding length
-                //System.out.println("Average list size for length " + length + ": " + avg_list_size[length]);
+                // System.out.println("Average list size for length " + length + ": " +
+                // avg_list_size[length]);
             } else {
-                //System.out.println("No words with length " + length);
+                // System.out.println("No words with length " + length);
             }
         }
 
@@ -344,7 +361,8 @@ public class BulkCheck {
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 float difference = Math.abs(K - avg_list_size[length]);
-                //System.out.println("For length " + length + " the difference from K (=" + K + ") is " + difference);
+                // System.out.println("For length " + length + " the difference from K (=" + K +
+                // ") is " + difference);
                 if (difference < min_difference_from_K) {
                     min_difference_from_K = difference;
                     optimal_length = length;
@@ -354,11 +372,10 @@ public class BulkCheck {
 
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
 
-
         Dashboard.appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        //print_precision_recall_f1(misspellings_path, utils, type);
+        // print_precision_recall_f1(misspellings_path, utils, type);
     }
 
     void print_precision_recall_f1(String misspellings_path, Utilities utils, String type) throws IOException {
@@ -370,7 +387,8 @@ public class BulkCheck {
             String line;
             while ((line = bfr.readLine()) != null) {
                 String[] tokens = line.split(",");
-                if (tokens.length == 0) continue;
+                if (tokens.length == 0)
+                    continue;
 
                 LinkedHashSet<String> expected = new LinkedHashSet<>();
                 for (String t : tokens) {
@@ -394,11 +412,10 @@ public class BulkCheck {
         float avgRecall = counter > 0 ? totalRecall / counter : 0;
         float f1 = (avgPrecision + avgRecall > 0) ? (2 * avgPrecision * avgRecall) / (avgPrecision + avgRecall) : 0;
 
-        //System.out.println("Precision: " + avgPrecision);
-        //System.out.println("Recall: " + avgRecall);
+        // System.out.println("Precision: " + avgPrecision);
+        // System.out.println("Recall: " + avgRecall);
         System.out.println("F-score: " + f1);
     }
-
 
     /**
      * Performs experiments for various dataset sizes.
@@ -411,17 +428,17 @@ public class BulkCheck {
 
         // PARAMS of the experiments to run
         // Dataset sizes
-        int dSizeMin = 10;   //100
-        int dSizeMax = 100;  //3000
-        int dSizeStep = 20;  //4000
+        int dSizeMin = 10; // 100
+        int dSizeMax = 100; // 3000
+        int dSizeStep = 20; // 4000
 
         // Code sizes
-        int codeSizeMin = 4; //100
-        int codeSizeMax = 12; //3000
+        int codeSizeMin = 4; // 100
+        int codeSizeMax = 12; // 3000
 
         for (int ds = dSizeMin; ds <= dSizeMax; ds += dSizeStep) { // datasetsizes
-            for (int codeSize = codeSizeMin; codeSize <= codeSizeMax; codeSize++) {  // code sizes
-                performExperiments(ds, codeSize);  // performs the experiments for size ds and code length codeSize
+            for (int codeSize = codeSizeMin; codeSize <= codeSizeMax; codeSize++) { // code sizes
+                performExperiments(ds, codeSize); // performs the experiments for size ds and code length codeSize
             }
         }
         // closing the measurements file
@@ -429,18 +446,18 @@ public class BulkCheck {
         System.out.println("COMPLETION.");
     }
 
-
     /**
      * Performs all the experiments
      *
-     * @param maxWordNum max number of words from the dataset to be considered (use 0 for no limit in the number of words to be considered)
+     * @param maxWordNum max number of words from the dataset to be considered (use
+     *                   0 for no limit in the number of words to be considered)
      * @param codeLength the length of the codes to be used
      */
     public static void performExperiments(int maxWordNum, int codeLength) {
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
 
-        //MeasurementsWriter initialization and header
+        // MeasurementsWriter initialization and header
         if (mw == null) { // if already created
             String filename = "Resources/measurements/currentMeasurements.csv";
             System.out.println("Creating a new file: " + filename);
@@ -449,15 +466,15 @@ public class BulkCheck {
         }
 
         String[] DatasetFiles = {
-                "Resources/names/additions.txt",            // additions
-                "Resources/names/subs.txt",                // subtitutions
-                "Resources/names/deletions.txt",            // deletions
-                "Resources/names/same_sounded.txt",        // same sounded
-                "Resources/names/same_soundedExtended.txt"    // same sounded (extended)
-                //"Resources/names/dictionaryBased.txt",       // dictionary Based (current)
-                //"Resources/names/dictionaryBasedFull.txt",
-                //"Resources/names/newcollection.txt"  // test purposes
-        };  // evaluation collections
+                "Resources/names/additions.txt", // additions
+                "Resources/names/subs.txt", // subtitutions
+                "Resources/names/deletions.txt", // deletions
+                "Resources/names/same_sounded.txt", // same sounded
+                "Resources/names/same_soundedExtended.txt" // same sounded (extended)
+                // "Resources/names/dictionaryBased.txt", // dictionary Based (current)
+                // "Resources/names/dictionaryBasedFull.txt",
+                // "Resources/names/newcollection.txt" // test purposes
+        }; // evaluation collections
 
         String OptionsToEvaluate[] = {
                 "exactMatch",
@@ -471,18 +488,16 @@ public class BulkCheck {
                 "editDistance2",
                 "editDistance3",
                 "editDistance4"
-        };  // all supported options
+        }; // all supported options
 
-
-        //for setting the desired code length
+        // for setting the desired code length
         SoundexGRExtra.LengthEncoding = codeLength;
         SoundexGRSimple.LengthEncoding = codeLength;
         System.out.println("Indicative enconding: " + SoundexGRExtra.encode("Αυγο")); // for testing purposes
-        //System.out.println(SoundexGRSimple.encode("Αυγο"));
+        // System.out.println(SoundexGRSimple.encode("Αυγο"));
 
-
-        //String OptionsToEvaluate[] 	= { "soundex"};
-        String outputFilePrefix = "Resources/names/results";   // prefixes of files for writing
+        // String OptionsToEvaluate[] = { "soundex"};
+        String outputFilePrefix = "Resources/names/results"; // prefixes of files for writing
 
         try {
             for (String datasetFile : DatasetFiles) { // for each dataset file
@@ -493,30 +508,31 @@ public class BulkCheck {
                 System.out.println("[" + datasetFile + "]: ");
 
                 for (String optionToEvaluate : OptionsToEvaluate) { // for each code generation option
-                    // System.out.print("\tTesting *" + optionToEvaluate + "* " + "\tcodeLen=" + SoundexGRExtra.LengthEncoding +" \tmaxwords="+maxWordNum +"\t:");
+                    // System.out.print("\tTesting *" + optionToEvaluate + "* " + "\tcodeLen=" +
+                    // SoundexGRExtra.LengthEncoding +" \tmaxwords="+maxWordNum +"\t:");
                     System.out.format("\tTesting *%15s* codeLen=%d maxWords=%d ",
                             optionToEvaluate,
                             SoundexGRExtra.LengthEncoding,
                             maxWordNum);
 
-                    mw.write(datasetFile + "," + maxWordNum + "," + optionToEvaluate + ","); // writing to measurement file
+                    mw.write(datasetFile + "," + maxWordNum + "," + optionToEvaluate + ","); // writing to measurement
+                                                                                             // file
 
-                    String outputFileName =
-                            outputFilePrefix + "/output-" +
-                                    datasetFile.substring(datasetFile.lastIndexOf('/') + 1); // the prefix + the last part of the dataset filename
+                    String outputFileName = outputFilePrefix + "/output-" +
+                            datasetFile.substring(datasetFile.lastIndexOf('/') + 1); // the prefix + the last part of
+                                                                                     // the dataset filename
 
-                    //System.out.println(">>>>>"+outputFileName);
+                    // System.out.println(">>>>>"+outputFileName);
                     bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum);
-                    System.out.println(""); //-------------------------------------------------");
+                    System.out.println(""); // -------------------------------------------------");
                 }
                 utils.clear();
             }
         } catch (IOException ex) {
             Logger.getLogger(BulkCheck.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //mw.close(); // put in comments if you are not evaluating datasetsizes
+        // mw.close(); // put in comments if you are not evaluating datasetsizes
     }
-
 
     /**
      * Comparing the performance of Stemming
@@ -527,7 +543,7 @@ public class BulkCheck {
 
         System.out.println("Evaluating the peformance of *stemming*");
 
-        //MeasurementsWriter initialization and header
+        // MeasurementsWriter initialization and header
         if (mw == null) { // if not already created
             String filename = "Resources/measurements/currentMeasurements.csv";
             System.out.println("Creating a new file: " + filename);
@@ -535,16 +551,16 @@ public class BulkCheck {
             mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
         }
 
-        DatasetFiles = new String[]{
-                "Resources/names/additions.txt",        // additions
-                "Resources/names/subs.txt",            // subtitutions
-                "Resources/names/deletions.txt",        // deletions
-                "Resources/names/same_sounded.txt",        // same sounded
-                "Resources/names/same_soundedExtended.txt"        // same sounded (more)
+        DatasetFiles = new String[] {
+                "Resources/names/additions.txt", // additions
+                "Resources/names/subs.txt", // subtitutions
+                "Resources/names/deletions.txt", // deletions
+                "Resources/names/same_sounded.txt", // same sounded
+                "Resources/names/same_soundedExtended.txt" // same sounded (more)
         };
 
-        String OptionsToEvaluate[] = {"stemcase"};
-        String outputFile = "Resources/names/results/sames-stemmer.txt";   // file for writing
+        String OptionsToEvaluate[] = { "stemcase" };
+        String outputFile = "Resources/names/results/sames-stemmer.txt"; // file for writing
 
         try {
             for (String datasetFile : DatasetFiles) { // for each dataset file
@@ -563,61 +579,58 @@ public class BulkCheck {
         }
     }
 
-    private static void write_wordsOfDoc_to_files
-            (Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
+    private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
         try {
             if (allWordsByDoc.isEmpty()) {
                 throw new RuntimeException("No words in the given document");
             }
 
+            Set<String> aggregated = new LinkedHashSet<>();
             for (String docName : DocNames) {
                 String fileName = "Resources//collection_words//" + docName + "_words.txt";
-                String fileName_all_words = "Resources//collection_words//collection_all_words.dic";
-                FileWriter fr = new FileWriter(fileName);
-                BufferedWriter br = new BufferedWriter(fr);
+                try (BufferedWriter br = new BufferedWriter(new FileWriter(fileName, false))) {
+                    Set<String> words = allWordsByDoc.get(docName);
+                    if (words == null) continue;
+                    for (String word : words) {
+                        // Remove parentheses and brackets
+                        if (word.startsWith("(") || word.startsWith("[")) {
+                            word = word.substring(1);
+                        }
+                        if (word.endsWith(")") || word.endsWith("]")) {
+                            word = word.substring(0, word.length() - 1);
+                        }
 
-                FileWriter fr_all = new FileWriter(fileName_all_words, true);
-                BufferedWriter br_all = new BufferedWriter(fr_all);
+                        // Remove commas and periods
+                        if (word.endsWith(",") || word.endsWith(".")) {
+                            word = word.substring(0, word.length() - 1);
+                        }
 
+                        // Skip numbers
+                        if (word.matches("[0-9]+")) {
+                            continue;
+                        }
 
-                Set<String> words = allWordsByDoc.get(docName);
-                for (String word : words) {
-                    // Remove parentheses and brackets
-                    if (word.startsWith("(") || word.startsWith("[")) {
-                        word = word.substring(1);
+                        // Skip non-Greek words
+                        if (!word.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
+                            continue;
+                        }
+
+                        // Skip words with length 2 or less
+                        if (word.length() <= 2) {
+                            continue;
+                        }
+
+                        br.write(word + "\n");
+                        aggregated.add(word);
                     }
-                    if (word.endsWith(")") || word.endsWith("]")) {
-                        word = word.substring(0, word.length() - 1);
-                    }
-
-                    // Remove commas and periods
-                    if (word.endsWith(",") || word.endsWith(".")) {
-                        word = word.substring(0, word.length() - 1);
-                    }
-
-                    // Skip numbers
-                    if (word.matches("[0-9]+")) {
-                        continue;
-                    }
-
-                    //Skip non-Greek words
-                    if (!word.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
-                        continue;
-                    }
-
-                    // Skip words with length 2 or less
-                    if (word.length() <= 2) {
-                        continue;
-                    }
-
-                    br.write(word + "\n");
-                    br_all.write(word + "\n");
                 }
+            }
 
-                br_all.close();
-                fr_all.close();
-                br.close();
-                fr.close();
+            String aggregatedFile = "Resources//collection_words//collection_all_words.dic";
+            try (BufferedWriter br_all = new BufferedWriter(new FileWriter(aggregatedFile, false))) {
+                for (String w : aggregated) {
+                    br_all.write(w + "\n");
+                }
             }
         } catch (IOException ex) {
             System.out.println(ex);
@@ -628,7 +641,7 @@ public class BulkCheck {
     private static ArrayList<String> Read_and_Write_to_file() {
         ArrayList<String> DocNames = new ArrayList<>();
         List<String> tokensOfDoc = null;
-        Map<String, List<String>> allTokensByDoc = new HashMap<>();  // To store tokens per document
+        Map<String, List<String>> allTokensByDoc = new HashMap<>(); // To store tokens per document
         Map<String, Set<String>> allWordsByDoc = new HashMap<>();
         IRSystem irs = new IRSystem();
         DocumentCorpus corpus = new DocumentCorpus("Resources//collection");
@@ -671,7 +684,10 @@ public class BulkCheck {
 
         try {
             String selectedDoc = Dashboard.getSelectedDatasetFile();
-            String selectedWordsFile = "Resources//collection_words//" + selectedDoc + "_words.txt";
+            String selectedWordsFile =
+                    "All datasets".equals(selectedDoc)
+                            ? "Resources//collection_words//collection_all_words.dic"
+                            : "Resources//collection_words//" + selectedDoc + "_words.txt";
 
             utils.readFile(selectedWordsFile);
             String input = utils.getContents(selectedWordsFile);
@@ -685,19 +701,28 @@ public class BulkCheck {
                 }
                 output.append("\n");
             }
-            utils.writeToFile(output.toString(), "Resources//collection_words_misspellings//misspellings_" + selectedDoc + "_words.txt");
+            String misspellingsOut =
+                    "All datasets".equals(selectedDoc)
+                            ? "Resources//collection_words_misspellings//misspellings_collection_all_words.dic"
+                            : "Resources//collection_words_misspellings//misspellings_" + selectedDoc + "_words.txt";
+            utils.writeToFile(output.toString(), misspellingsOut);
 
+            // for (int j = 0; j < number_of_datasets; j++) {
+            String misspellingFile =
+                    "All datasets".equals(Dashboard.getSelectedDatasetFile())
+                            ? "Resources//collection_words_misspellings//misspellings_collection_all_words.dic"
+                            : "Resources//collection_words_misspellings//misspellings_" + Dashboard.getSelectedDatasetFile() + "_words.txt";
 
-            //for (int j = 0; j < number_of_datasets; j++) {
-            String misspellingFile = "Resources//collection_words_misspellings//misspellings_" + Dashboard.getSelectedDatasetFile() + "_words.txt";
-
-            String SelectedDatasetFile = "Resources//collection_words//" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+            String SelectedDatasetFile =
+                    "All datasets".equals(Dashboard.getSelectedDatasetFile())
+                            ? "Resources//collection_words//collection_all_words.dic"
+                            : "Resources//collection_words//" + Dashboard.getSelectedDatasetFile() + "_words.txt";
             System.out.println("\n[" + SelectedDatasetFile + "]: ");
-            utils.readFile(misspellingFile);  // Retrieve the file at index j
+            utils.readFile(misspellingFile); // Retrieve the file at index j
             bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
             Toolkit.getDefaultToolkit().beep();
             utils.clear();
-            //}
+            // }
 
         } catch (IOException ex) {
             System.out.println(ex);
@@ -712,10 +737,11 @@ public class BulkCheck {
 
         // UNCOMMENT THE METHOD THAT YOU WANT TO RUN
 
-        //performExperimentsWithStemmer();  // evaluation of a Greek stemmer   (status: ok)
-        //performExperiments(0,4); // 1st arg. word limit, 2nd code length  (status: ok)
-        //performExperimentsForDatasetSizes(); // performs experiments for various data sizes (status:ok)
-
+        // performExperimentsWithStemmer(); // evaluation of a Greek stemmer (status:
+        // ok)
+        // performExperiments(0,4); // 1st arg. word limit, 2nd code length (status: ok)
+        // performExperimentsForDatasetSizes(); // performs experiments for various data
+        // sizes (status:ok)
 
         System.out.println("[BulkCheck]-complete");
     }

@@ -117,7 +117,9 @@ public class Dashboard extends JFrame {
 
     public static int getNumberOfWords_of_SelectedDatasetFile() {
         //calculate the number of words of the selected dataset file
-        File file = new File("Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt");
+        File file = "All datasets".equals(getSelectedDatasetFile())
+                ? new File("Resources//collection_words//collection_all_words.dic")
+                : new File("Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt");
         int count = 0;
         try {
             java.util.Scanner sc = new java.util.Scanner(file);
@@ -133,7 +135,9 @@ public class Dashboard extends JFrame {
     }
 
     public static int getNumberOfDistinctWords_of_SelectedDatasetFile() {
-        File file = new File("Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt");
+        File file = "All datasets".equals(getSelectedDatasetFile())
+                ? new File("Resources/collection_words/collection_all_words.dic")
+                : new File("Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt");
         Set<String> words = new HashSet<>();
 
         try (Scanner sc = new Scanner(file)) {
@@ -153,7 +157,9 @@ public class Dashboard extends JFrame {
 
     public static int getNumberOfWords_of_DatasetFile(String docName) {
         //calculate the number of words of the selected dataset file
-        File file = new File("Resources//collection_words//" + docName + "_words.txt");
+        File file = "All datasets".equals(docName)
+                ? new File("Resources//collection_words//collection_all_words.dic")
+                : new File("Resources//collection_words//" + docName + "_words.txt");
         int count = 0;
         try {
             java.util.Scanner sc = new java.util.Scanner(file);
@@ -493,15 +499,16 @@ public class Dashboard extends JFrame {
         // Label for the combo box
         JLabel datasetLabel = new JLabel("Dataset:");
 
-        // JComboBox for selecting dataset files
-        String[] docNames = new String[DatasetFiles.length];
+        // JComboBox for selecting dataset files (+ All datasets)
+        String[] docNames = new String[DatasetFiles.length + 1];
+        docNames[0] = "All datasets";
         for (int i = 0; i < DatasetFiles.length; i++) {
             int index = DatasetFiles[i].lastIndexOf("/");
             String name = DatasetFiles[i].substring(index + 1);
 
             index = name.lastIndexOf(".");
             name = name.substring(0, index);
-            docNames[i] = name;
+            docNames[i + 1] = name;
         }
 
         JComboBox<String> datasetComboBox = new JComboBox<>(docNames);
