@@ -112,10 +112,6 @@ public class BulkCheck {
         switch (Dashboard.getSelectedMethod()) {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
-                
-                // Add distinct word count to console output
-                int distinctWordsRealTime = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
-                System.out.println("Distinct words: " + distinctWordsRealTime);
 
                 boolean bounded = maxWordNum != 0;
                 Set<String> seenWords = new HashSet<>();
@@ -203,30 +199,18 @@ public class BulkCheck {
             case "Predefined length":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
                 System.out.println("Predefined length and optimal length: " + SoundexGRExtra.LengthEncoding);
-                
-                // Add distinct word count to console output
-                int distinctWords = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
-                System.out.println("Distinct words: " + distinctWords);
-                
+
                 //print_precision_recall_f1(misspellings_path, utils, type);
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
-                
-                // Add distinct word count to console output
-                int distinctWordsHybrid1 = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
-                System.out.println("Distinct words: " + distinctWordsHybrid1);
-                
+
                 HybridMethod_execution(misspellings_path, null, utils, type);
                 break;
 
             case "Hybrid method ii-iii":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
                 assert SoundexGRExtra.LengthEncoding != -1; //if length is -1 then there is no suitable code length
-
-                // Add distinct word count to console output
-                int distinctWordsHybrid2 = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
-                System.out.println("Distinct words: " + distinctWordsHybrid2);
 
                 int[] lengthsForTesting;
                 if (SoundexGRExtra.LengthEncoding > 2) {
@@ -243,6 +227,10 @@ public class BulkCheck {
             default:
                 throw new RuntimeException("No method selected");
         }
+
+        int distinctWordsForSelectedDataset = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+        System.out.println("Distinct words with length over 2 characters: " + distinctWordsForSelectedDataset);
+
 
         long end = System.nanoTime();
         long total = end - start;
@@ -617,6 +605,11 @@ public class BulkCheck {
                         continue;
                     }
 
+                    // Skip words with length 2 or less
+                    if (word.length() <= 2) {
+                        continue;
+                    }
+
                     br.write(word + "\n");
                     br_all.write(word + "\n");
                 }
@@ -677,23 +670,22 @@ public class BulkCheck {
         int number_of_datasets = DatasetFiles.length;
 
         try {
-            for (String FileWords : datasetFileWords) {
-                utils.readFile(FileWords);
-                String input = utils.getContents(FileWords);
-                ArrayList<String> tokens = Tokenizer.getTokens(input);
+            String selectedDoc = Dashboard.getSelectedDatasetFile();
+            String selectedWordsFile = "Resources//collection_words//" + selectedDoc + "_words.txt";
 
-                StringBuilder output = new StringBuilder();
-                for (String token : tokens) {
+            utils.readFile(selectedWordsFile);
+            String input = utils.getContents(selectedWordsFile);
+            ArrayList<String> tokens = Tokenizer.getTokens(input);
 
-                    output.append(token);
-                    for (String errorStr : DictionaryBasedMeasurements.returnVariations(token)) {
-                        output.append(", ").append(errorStr);
-                        //System.out.println(output);
-                    }
-                    output.append("\n");
+            StringBuilder output = new StringBuilder();
+            for (String token : tokens) {
+                output.append(token);
+                for (String errorStr : DictionaryBasedMeasurements.returnVariations(token)) {
+                    output.append(", ").append(errorStr);
                 }
-                utils.writeToFile(output.toString(), "Resources//collection_words_misspellings//misspellings_" + FileWords.substring(FileWords.lastIndexOf("/") + 1));
+                output.append("\n");
             }
+            utils.writeToFile(output.toString(), "Resources//collection_words_misspellings//misspellings_" + selectedDoc + "_words.txt");
 
 
             //for (int j = 0; j < number_of_datasets; j++) {
