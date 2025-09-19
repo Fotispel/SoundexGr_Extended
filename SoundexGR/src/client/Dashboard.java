@@ -553,22 +553,12 @@ public class Dashboard extends JFrame {
         methodComboBox.addActionListener(e -> {
             selectedMethod = (String) methodComboBox.getSelectedItem();
 
-            assert selectedMethod != null;
+            assert (Objects.equals(selectedMethod, "Real-time length calculation") ||
+                    Objects.equals(selectedMethod, "Predefined length") ||
+                    Objects.equals(selectedMethod, "Hybrid method i-ii") ||
+                    Objects.equals(selectedMethod, "Hybrid method ii-iii"));
 
-            switch (selectedMethod) {
-                case "Real-time length calculation":   //1st method
-                    BulkCheck.execute_selected_method();
-                    break;
-                case "Predefined length":   //2nd method
-                    BulkCheck.execute_selected_method();
-                    break;
-                case "Hybrid method i-ii":   //3rd method
-                    BulkCheck.execute_selected_method();
-                    break;
-                case "Hybrid method ii-iii":   //4th method
-                    BulkCheck.execute_selected_method();
-                    break;
-            }
+                BulkCheck.execute_selected_method();
         });
 
         // Set font for combo box and label
