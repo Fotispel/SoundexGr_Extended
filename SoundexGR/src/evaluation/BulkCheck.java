@@ -186,7 +186,7 @@ public class BulkCheck {
                 length_per_DocName.put(Dashboard.getSelectedDatasetFile(), length_for_max_f_score);
 
                 length_per_docSize.put(length_for_max_f_score,
-                        Dashboard.getNumberOfWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
+                        Dashboard.getNumberOfTotalWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
                 // System.out.println("Length per docSize: " + length_per_docSize);
 
                 if (mw == null) {
@@ -242,8 +242,11 @@ public class BulkCheck {
                 throw new RuntimeException("No method selected");
         }
 
-        int distinctWordsForSelectedDataset = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+        int distinctWordsForSelectedDataset = Dashboard.getNumberOfDistinctWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
         System.out.println("Distinct words with length over two characters: " + distinctWordsForSelectedDataset);
+
+        int numOfWords_for_selectedDataset = Dashboard.getNumberOfTotalWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
+        System.out.println("Total number of words over two characters: " + numOfWords_for_selectedDataset);
 
         long end = System.nanoTime();
         long total = end - start;

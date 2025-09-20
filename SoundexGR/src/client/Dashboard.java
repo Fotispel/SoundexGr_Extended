@@ -115,29 +115,10 @@ public class Dashboard extends JFrame {
         Dashboard.selectedMethod = selectedMethod;
     }
 
-    public static int getNumberOfWords_of_SelectedDatasetFile() {
-        //calculate the number of words of the selected dataset file
-        File file = "All datasets".equals(getSelectedDatasetFile())
-                ? new File("Resources//collection_words//collection_all_words.dic")
-                : new File("Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt");
-        int count = 0;
-        try {
-            java.util.Scanner sc = new java.util.Scanner(file);
-            while (sc.hasNext()) {
-                sc.next();
-                count++;
-            }
-            sc.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return count;
-    }
-
-    public static int getNumberOfDistinctWords_of_SelectedDatasetFile() {
-        File file = "All datasets".equals(getSelectedDatasetFile())
+    public static int getNumberOfDistinctWords_of_DatasetFile(String docName) {
+        File file = "All datasets".equals(docName)
                 ? new File("Resources/collection_words/collection_all_words.dic")
-                : new File("Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt");
+                : new File("Resources/collection_words/" + docName + "_words.txt");
         Set<String> words = new HashSet<>();
 
         try (Scanner sc = new Scanner(file)) {
@@ -154,25 +135,39 @@ public class Dashboard extends JFrame {
         return words.size();
     }
 
-
-    public static int getNumberOfWords_of_DatasetFile(String docName) {
-        //calculate the number of words of the selected dataset file
-        File file = "All datasets".equals(docName)
-                ? new File("Resources//collection_words//collection_all_words.dic")
-                : new File("Resources//collection_words//" + docName + "_words.txt");
+    //calculate the number of words of the dataset file
+    public static int getNumberOfTotalWords_of_DatasetFile(String docName) {
         int count = 0;
-        try {
-            java.util.Scanner sc = new java.util.Scanner(file);
+
+        if (Objects.equals(docName, "All datasets")) {
+            for (String dn : DocNames) {
+                File file = new File("Resources//collection//" + dn + ".txt");
+                count += getNumberOfTotalWords_of_File(file);
+            }
+        } else {
+            File file = new File("Resources//collection//" + docName + ".txt");
+            count += getNumberOfTotalWords_of_File(file);
+        }
+
+        return count;
+    }
+
+    // Βοηθητική μέθοδος για να μετράει λέξεις σε ένα αρχείο
+    private static int getNumberOfTotalWords_of_File(File file) {
+        int count = 0;
+        if (!file.exists()) return 0;
+
+        try (java.util.Scanner sc = new java.util.Scanner(file)) {
             while (sc.hasNext()) {
                 sc.next();
                 count++;
             }
-            sc.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return count;
     }
+
 
     /**
      * Constructor. Takes an input the object that will act as actionlistener
@@ -565,7 +560,7 @@ public class Dashboard extends JFrame {
                     Objects.equals(selectedMethod, "Hybrid method i-ii") ||
                     Objects.equals(selectedMethod, "Hybrid method ii-iii"));
 
-                BulkCheck.execute_selected_method();
+            BulkCheck.execute_selected_method();
         });
 
         // Set font for combo box and label

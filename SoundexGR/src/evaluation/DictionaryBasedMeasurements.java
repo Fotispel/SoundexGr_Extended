@@ -282,7 +282,7 @@ public class DictionaryBasedMeasurements {
                     return -1; // or some default value
                 }
             case ("Predefined length"):
-                int numWords = Dashboard.getNumberOfDistinctWords_of_SelectedDatasetFile();
+                int numWords = Dashboard.getNumberOfDistinctWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
