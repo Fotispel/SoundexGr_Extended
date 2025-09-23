@@ -267,19 +267,16 @@ public class DictionaryBasedMeasurements {
         }
 
         switch (SelectedMethod) {
-            // If the file index was found, calculate the length
             case ("Real-time length calculation"):
                 if (File_index != -1) {
-                    //System.out.println("File index: " + File_index);
-                    //System.out.println("Doc name: " + Dashboard.getSelectedDatasetFile());
-                    //System.out.println("Length: " + length_per_DocName.get(Dashboard.getSelectedDatasetFile()));
+                    // If the file index was found, calculate the length
                     int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
                     Dashboard.appSoundexCodeLen = length; // Set length
                     return length;
                 } else {
                     // Handle the case where the selected file was not found
                     System.err.println("File not found: " + Dashboard.getSelectedDatasetFile());
-                    return -1; // or some default value
+                    return -1;
                 }
             case ("Predefined length"):
                 int numWords = Dashboard.getNumberOfDistinctWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
@@ -315,11 +312,8 @@ public class DictionaryBasedMeasurements {
      * @return
      */
     public static Set<String> returnWordsHavingTheSameCode(String code, String path) {
-        //if (codesToWords == null) {
-        codesToWords = new HashMap<>(); // the map
+        codesToWords = new HashMap<>();
         String line;
-
-        //System.out.println("Starting encoding the dictionary with code length " + SoundexGRExtra.LengthEncoding);
 
         try {
             String dictResourcePlace;
@@ -333,7 +327,7 @@ public class DictionaryBasedMeasurements {
             dictResourcePlace = System.getProperty("user.dir") + dictResourcePlace;
 
             setDictionaryLocation(dictResourcePlace);
-            //System.out.printf("Reading dictionary from %s\n", placeDict);
+
             FileInputStream inDict = new FileInputStream(placeDict);
             BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
             while ((line = bfr.readLine()) != null) {
@@ -347,13 +341,11 @@ public class DictionaryBasedMeasurements {
                     wordsWithThatCode.add(line);
                 }
             }
-            bfr.close(); // Close BufferedReader after reading the file
+            bfr.close();
         } catch (Exception e) {
             System.out.println(e);
         }
 
-        //System.out.println("Dictionary was read, number of phonetic keys = " + codesToWords.keySet().size());
-        //}
         return codesToWords.get(code);
     }
 

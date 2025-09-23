@@ -3,9 +3,9 @@ package client;
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
 import evaluation.BulkCheck;
-import evaluation.DictionaryBasedMeasurements;
-import evaluation.DictionaryMatcher;
-import evaluation.Tokenizer;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +19,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static evaluation.BulkCheck.*;
@@ -118,7 +121,7 @@ public class Dashboard extends JFrame {
     public static int getNumberOfDistinctWords_of_DatasetFile(String docName) {
         File file = "All datasets".equals(docName)
                 ? new File("Resources/collection_words/collection_all_words.dic")
-                : new File("Resources/collection_words/" + docName + "_words.txt");
+                : new File(Paths.get("Resources/collection_words/" + docName + "_words.txt").toString());
         Set<String> words = new HashSet<>();
 
         try (Scanner sc = new Scanner(file)) {
@@ -135,36 +138,58 @@ public class Dashboard extends JFrame {
         return words.size();
     }
 
-    //calculate the number of words of the dataset file
+
     public static int getNumberOfTotalWords_of_DatasetFile(String docName) {
         int count = 0;
 
-        if (Objects.equals(docName, "All datasets")) {
+        String safeDocName = URLDecoder.decode(docName, StandardCharsets.UTF_8);
+
+        if (Objects.equals(safeDocName, "All datasets")) {
             for (String dn : DocNames) {
-                File file = new File("Resources//collection//" + dn + ".txt");
+                String safeDn = URLDecoder.decode(dn, StandardCharsets.UTF_8);
+                File file = Paths.get("Resources", "collection", safeDn + ".txt").toFile();
+                if (!file.exists()) {
+                    file = Paths.get("Resources", "collection", safeDn + ".pdf").toFile();
+                }
                 count += getNumberOfTotalWords_of_File(file);
             }
         } else {
-            File file = new File("Resources//collection//" + docName + ".txt");
+            File file = Paths.get("Resources", "collection", safeDocName + ".txt").toFile();
+            if (!file.exists()) {
+                file = Paths.get("Resources", "collection", safeDocName + ".pdf").toFile();
+            }
             count += getNumberOfTotalWords_of_File(file);
         }
 
         return count;
     }
 
-    // Βοηθητική μέθοδος για να μετράει λέξεις σε ένα αρχείο
+
     private static int getNumberOfTotalWords_of_File(File file) {
         int count = 0;
         if (!file.exists()) return 0;
 
-        try (java.util.Scanner sc = new java.util.Scanner(file)) {
-            while (sc.hasNext()) {
-                sc.next();
-                count++;
+        try {
+            if (file.getName().endsWith(".pdf")) {
+                try (PDDocument document = Loader.loadPDF(file)) {
+                    PDFTextStripper stripper = new PDFTextStripper();
+                    String text = stripper.getText(document);
+
+                    String[] words = text.trim().split("\\s+");
+                    count = (text.isBlank()) ? 0 : words.length;
+                }
+            } else {
+                try (Scanner sc = new Scanner(file)) {
+                    while (sc.hasNext()) {
+                        sc.next();
+                        count++;
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return count;
     }
 
@@ -481,36 +506,45 @@ public class Dashboard extends JFrame {
     }
 
     /**
-     * Creates the combo box for selecting dataset files.
+     * Create gui elements for the dataset files selection
      */
     void createDatasetFilesSelection(JPanel parentPanel) {
-        // Panel for dataset files selection
-        JPanel datasetPanel = new JPanel(new FlowLayout()); // rows, columns, int hgap, int vgap)
+        JPanel datasetPanel = new JPanel(new FlowLayout());
         datasetPanel.setBackground(ColorMgr.colorBackground);
-
         datasetPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Select Dataset Files"));
 
-        // Label for the combo box
         JLabel datasetLabel = new JLabel("Dataset:");
 
-        // JComboBox for selecting dataset files (+ All datasets)
-        String[] docNames = new String[DatasetFiles.length + 1];
-        docNames[0] = "All datasets";
-        for (int i = 0; i < DatasetFiles.length; i++) {
-            int index = DatasetFiles[i].lastIndexOf("/");
-            String name = DatasetFiles[i].substring(index + 1);
+        // Map: display name -> internal name
+        java.util.Map<String, String> displayToInternal = new java.util.HashMap<>();
 
-            index = name.lastIndexOf(".");
-            name = name.substring(0, index);
-            docNames[i + 1] = name;
+        // Προσθέτουμε "All datasets"
+        displayToInternal.put("All datasets", "All datasets");
+
+        String[] comboNames = new String[DatasetFiles.length + 1];
+        comboNames[0] = "All datasets";
+
+        for (int i = 0; i < DatasetFiles.length; i++) {
+            File f = new File(DatasetFiles[i]);
+            String internalName = f.getName(); // π.χ. "Oidypous%20Tyrannos.txt"
+
+            // Decode για display
+            String displayName = java.net.URLDecoder.decode(internalName, java.nio.charset.StandardCharsets.UTF_8);
+
+            int dotIndex = displayName.lastIndexOf('.');
+            if (dotIndex > 0) displayName = displayName.substring(0, dotIndex);
+
+            comboNames[i + 1] = displayName;
+            displayToInternal.put(displayName, internalName.substring(0, internalName.lastIndexOf('.')));
         }
 
-        JComboBox<String> datasetComboBox = new JComboBox<>(docNames);
+        JComboBox<String> datasetComboBox = new JComboBox<>(comboNames);
 
-        // Add ActionListener to the combo box
         datasetComboBox.addActionListener(e -> {
-            selectedDatasetFile = (String) datasetComboBox.getSelectedItem();
+            String displayName = (String) datasetComboBox.getSelectedItem();
+            String internalName = displayToInternal.get(displayName); // παίρνουμε το %20 version
+            setSelectedDatasetFile(internalName); // για χρήση στο πρόγραμμα
 
             if (!Objects.equals(getSelectedMethod(), "")) {
                 execute_selected_method();
@@ -519,21 +553,19 @@ public class Dashboard extends JFrame {
             }
         });
 
-        // Set font for combo box and label
         datasetLabel.setFont(appButtonfont);
         datasetComboBox.setFont(appButtonfont);
 
-        // Add components to the panel
         datasetPanel.add(datasetLabel);
         datasetPanel.add(datasetComboBox);
 
-        // Add the panel to the parent panel or frame
         if (parentPanel == null) {
-            this.add(datasetPanel); // adds to Frame
+            this.add(datasetPanel);
         } else {
             parentPanel.add(datasetPanel);
         }
     }
+
 
     void createMethodSelection(JPanel parentPanel) {
         // Panel for dataset files selection

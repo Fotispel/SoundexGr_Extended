@@ -178,6 +178,8 @@ public class BulkCheck {
                         max_f_score = avgFmeasure;
                         length_for_max_f_score = length_for_testing;
                     }
+
+                    System.out.println("Length: " + length_for_testing + " " + avgFmeasure);
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
@@ -246,7 +248,7 @@ public class BulkCheck {
         System.out.println("Distinct words with length over two characters: " + distinctWordsForSelectedDataset);
 
         int numOfWords_for_selectedDataset = Dashboard.getNumberOfTotalWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
-        System.out.println("Total number of words over two characters: " + numOfWords_for_selectedDataset);
+        System.out.println("Total number of words: " + numOfWords_for_selectedDataset);
 
         long end = System.nanoTime();
         long total = end - start;
@@ -267,7 +269,7 @@ public class BulkCheck {
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[] { 2, 3, 4, 5, 6, 7, 8, 9 };
+            lengthsForTesting = new int[] { 3, 4, 5, 6, 7, 8, 9 };
         }
 
         List<Integer> sizes = new ArrayList<>();
@@ -322,16 +324,18 @@ public class BulkCheck {
         float K = count > 0 ? totalSum / count : 1.5f;
         System.out.println("Calculated K: " + K);
 
-        // Print words grouped by their wcode
+        /*
+        Print words grouped by their wcode
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 List<Set<String>> words = SameCodeWords_per_length.get(length);
-                // System.out.println("Words with length " + length + ": " + words);
+                System.out.println("Words with length " + length + ": " + words);
 
             } else {
                 // System.out.println("No words with length " + length);
             }
         }
+        */
 
         float[] avg_list_size = new float[30];
 
@@ -349,10 +353,6 @@ public class BulkCheck {
                 // Calculate the average list size
                 float avgSize = words.isEmpty() ? 0 : (float) totalSize / words.size();
                 avg_list_size[length] = avgSize;
-
-                // Print the average size for this encoding length
-                // System.out.println("Average list size for length " + length + ": " +
-                // avg_list_size[length]);
             } else {
                 // System.out.println("No words with length " + length);
             }
@@ -364,8 +364,7 @@ public class BulkCheck {
         for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
             if (SameCodeWords_per_length.containsKey(length)) {
                 float difference = Math.abs(K - avg_list_size[length]);
-                // System.out.println("For length " + length + " the difference from K (=" + K +
-                // ") is " + difference);
+
                 if (difference < min_difference_from_K) {
                     min_difference_from_K = difference;
                     optimal_length = length;

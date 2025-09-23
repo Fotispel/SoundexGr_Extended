@@ -1,1 +1,7 @@
 /target/
+
+*.pdf
+*.txt
+
+!SoundexGR/Resources/Collection/*.pdf
+!SoundexGR/Resources/Collection/*.txt
