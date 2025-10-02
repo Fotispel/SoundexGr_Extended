@@ -86,8 +86,6 @@ public class Dashboard extends JFrame {
             System.out.println(DatasetFiles[i]);
         }
 
-        setSelectedDatasetFile(DocNames.get(0));
-
         String DefaultMethod = "";
         setSelectedMethod(DefaultMethod);
 
@@ -103,7 +101,7 @@ public class Dashboard extends JFrame {
     }
 
     public static String getSelectedDatasetFile() {
-        return selectedDatasetFile;
+        return Dashboard.selectedDatasetFile;
     }
 
     public static void setSelectedDatasetFile(String selectedDatasetFile) {
@@ -541,10 +539,13 @@ public class Dashboard extends JFrame {
 
         JComboBox<String> datasetComboBox = new JComboBox<>(comboNames);
 
+        setSelectedDatasetFile(datasetComboBox.getItemAt(0));
+        System.out.println("Selected dataset file: " + getSelectedDatasetFile());
+
         datasetComboBox.addActionListener(e -> {
             String displayName = (String) datasetComboBox.getSelectedItem();
-            String internalName = displayToInternal.get(displayName); // παίρνουμε το %20 version
-            setSelectedDatasetFile(internalName); // για χρήση στο πρόγραμμα
+            String internalName = displayToInternal.get(displayName);
+            setSelectedDatasetFile(internalName);
 
             if (!Objects.equals(getSelectedMethod(), "")) {
                 execute_selected_method();
@@ -590,7 +591,13 @@ public class Dashboard extends JFrame {
             assert (Objects.equals(selectedMethod, "Real-time length calculation") ||
                     Objects.equals(selectedMethod, "Predefined length") ||
                     Objects.equals(selectedMethod, "Hybrid method i-ii") ||
-                    Objects.equals(selectedMethod, "Hybrid method ii-iii"));
+                    Objects.equals(selectedMethod, "Hybrid method ii-iii")) ||
+                    Objects.equals(selectedMethod, "");
+
+            if (Objects.equals(selectedMethod, "")) {
+                System.out.println("No method selected.");
+                return;
+            }
 
             BulkCheck.execute_selected_method();
         });

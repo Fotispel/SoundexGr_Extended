@@ -61,6 +61,22 @@ class AppController implements ActionListener {
 
         // Live Demo
         if (event.getSource() == Dashboard.demoB) {
+            int backup_length = Dashboard.getAppSoundexCodeLen();
+            String backup_selected_dataset = Dashboard.getSelectedDatasetFile();
+            String backup_method = Dashboard.getSelectedMethod();
+
+            Dashboard.setSelectedDatasetFile("gr.dic");
+            Dashboard.setSelectedMethod("Predefined length");
+            int newLen = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
+            Dashboard.appSoundexCodeLen = newLen;
+            SoundexGRExtra.LengthEncoding = newLen;
+            SoundexGRSimple.LengthEncoding = newLen;
+
+            System.out.println("Changed settings for demo: dataset=" + Dashboard.getSelectedDatasetFile() +
+                    ", method=" + Dashboard.getSelectedMethod() +
+                    ", length=" + Dashboard.getAppSoundexCodeLen()
+            );
+
             // Create new frame
             JFrame demoFrame = new JFrame("Demo Text Panel");
             demoFrame.setSize(800, 600);
@@ -83,18 +99,18 @@ class AppController implements ActionListener {
             cardPanel.add(scrollPane, "TEXT_AREA");
             cardPanel.add(wordButtonsPanel, "BUTTONS");
 
-
             JButton runDemoButton = new JButton("Run Demo");
 
             JCheckBox editTextCheckBox = new JCheckBox("Edit Text", true);
             editTextCheckBox.addActionListener(e -> demoTextArea.setEditable(editTextCheckBox.isSelected()));
 
             runDemoButton.addActionListener(e -> {
+                System.out.println("Run Demo with length " + Dashboard.getAppSoundexCodeLen() +
+                        " and dataset " + Dashboard.getSelectedDatasetFile());
                 String inputText = demoTextArea.getText();
                 StringBuilder outputText = new StringBuilder();
 
                 ArrayList<String> tokens = Tokenizer.getTokens(inputText);
-
 
                 for (String token : tokens) {
                     System.out.println("Token: " + token);
@@ -103,10 +119,17 @@ class AppController implements ActionListener {
                         outputText.append(token).append(" ");
                         continue;
                     }
-
+                    System.out.println("Length before getMatchings= " + Dashboard.getAppSoundexCodeLen());
                     String output = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true) + "\n";
                     //System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
-                    outputText.append(DictionaryMatcher.FirstMatch).append(" ");
+                    if (DictionaryMatcher.FirstMatch == null) {
+                        System.out.println("No match found for: " + token);
+                        outputText.append(token).append(" ");
+                    } else {
+                        String firstMatch = DictionaryMatcher.FirstMatch;
+                        System.out.println("First match for " + token + " is " + firstMatch);
+                        outputText.append(firstMatch).append(" ");
+                    }
                 }
 
                 System.out.println("Demo output: " + outputText);
@@ -168,7 +191,9 @@ class AppController implements ActionListener {
 
 
             JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(e -> demoFrame.dispose());
+            closeButton.addActionListener(
+                    e -> demoFrame.dispose()
+            );
 
             JPanel controlPanel = new JPanel(new FlowLayout());
             controlPanel.add(closeButton);
@@ -181,6 +206,22 @@ class AppController implements ActionListener {
 
             demoFrame.add(panel);
             demoFrame.setVisible(true);
+
+            demoFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    Dashboard.setSelectedDatasetFile(backup_selected_dataset);
+                    Dashboard.setSelectedMethod(backup_method);
+                    Dashboard.appSoundexCodeLen = backup_length;
+                    SoundexGRExtra.LengthEncoding = backup_length;
+                    SoundexGRSimple.LengthEncoding = backup_length;
+                    System.out.println("Restored previous settings: dataset=" + Dashboard.getSelectedDatasetFile() +
+                            ", method=" + Dashboard.getSelectedMethod() +
+                            ", length=" + Dashboard.getAppSoundexCodeLen()
+                    );
+                }
+            });
+
         }
 
         // Code Length
