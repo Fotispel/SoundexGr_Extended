@@ -226,15 +226,15 @@ public class BulkCheck {
 
                 int[] lengthsForTesting;
                 if (SoundexGRExtra.LengthEncoding > 2) {
-                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding - 2,
+                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 2,
                             SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
-                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2 };
+                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
                 } else if (SoundexGRExtra.LengthEncoding > 1) {
-                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
-                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2 };
+                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
+                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
                 } else {
-                    lengthsForTesting = new int[] { SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1,
-                            SoundexGRExtra.LengthEncoding + 2 };
+                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1,
+                            SoundexGRExtra.LengthEncoding + 2};
                 }
 
                 HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type);
@@ -269,7 +269,7 @@ public class BulkCheck {
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[] { 3, 4, 5, 6, 7, 8, 9 };
+            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 8, 9};
         }
 
         List<Integer> sizes = new ArrayList<>();
@@ -518,11 +518,11 @@ public class BulkCheck {
                             maxWordNum);
 
                     mw.write(datasetFile + "," + maxWordNum + "," + optionToEvaluate + ","); // writing to measurement
-                                                                                             // file
+                    // file
 
                     String outputFileName = outputFilePrefix + "/output-" +
                             datasetFile.substring(datasetFile.lastIndexOf('/') + 1); // the prefix + the last part of
-                                                                                     // the dataset filename
+                    // the dataset filename
 
                     // System.out.println(">>>>>"+outputFileName);
                     bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum);
@@ -553,7 +553,7 @@ public class BulkCheck {
             mw.write("# datasetName, datasetSize, codeMethod, CodeSize, Precision, Recall, FScore\n");
         }
 
-        DatasetFiles = new String[] {
+        DatasetFiles = new String[]{
                 "Resources/names/additions.txt", // additions
                 "Resources/names/subs.txt", // subtitutions
                 "Resources/names/deletions.txt", // deletions
@@ -561,7 +561,7 @@ public class BulkCheck {
                 "Resources/names/same_soundedExtended.txt" // same sounded (more)
         };
 
-        String OptionsToEvaluate[] = { "stemcase" };
+        String OptionsToEvaluate[] = {"stemcase"};
         String outputFile = "Resources/names/results/sames-stemmer.txt"; // file for writing
 
         try {
@@ -585,6 +585,14 @@ public class BulkCheck {
         try {
             if (allWordsByDoc.isEmpty()) {
                 throw new RuntimeException("No words in the given document");
+            }
+
+            File collectionDir = new File("Resources/collection_words");
+            if (!collectionDir.exists()) {
+                boolean created = collectionDir.mkdirs();
+                if (!created) {
+                    System.err.println("Failed to create directory: " + collectionDir.getAbsolutePath());
+                }
             }
 
             Set<String> aggregated = new LinkedHashSet<>();
@@ -705,8 +713,17 @@ public class BulkCheck {
             }
             String misspellingsOut =
                     "All datasets".equals(selectedDoc)
-                            ? "Resources//collection_words_misspellings//misspellings_collection_all_words.dic"
-                            : "Resources//collection_words_misspellings//misspellings_" + selectedDoc + "_words.txt";
+                            ? "Resources/collection_words_misspellings/misspellings_collection_all_words.dic"
+                            : "Resources/collection_words_misspellings/misspellings_" + selectedDoc + "_words.txt";
+
+            File misspellingsDir = new File("Resources/collection_words_misspellings");
+            if (!misspellingsDir.exists()) {
+                boolean created = misspellingsDir.mkdirs();
+                if (!created) {
+                    System.err.println("Failed to create directory: " + misspellingsDir.getAbsolutePath());
+                }
+            }
+
             utils.writeToFile(output.toString(), misspellingsOut);
 
             // for (int j = 0; j < number_of_datasets; j++) {
