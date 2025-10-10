@@ -103,13 +103,12 @@ public class DictionaryMatcher {
     public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
         FirstMatchFound = false;
 
-        String currentDir = System.getProperty("user.dir");
         String dictResourcePlace;
 
         if ("All datasets".equals(Dashboard.getSelectedDatasetFile())) {
-            dictResourcePlace = currentDir + "\\Resources\\collection_words\\collection_all_words.dic";
+            dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.dic";
         } else {
-            dictResourcePlace = currentDir + "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
+            dictResourcePlace = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
                     + "_words.txt";
         }
 
@@ -140,7 +139,7 @@ public class DictionaryMatcher {
         // with code: " + wcode);
 
         String path_to_selected_dataset = "All datasets".equals(Dashboard.getSelectedDatasetFile())
-                ? "\\Resources\\collection_words\\collection_all_words.dic"
+                ? "\\Resources\\collection_words\\All_datasets_words.dic"
                 : "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
                 path_to_selected_dataset);

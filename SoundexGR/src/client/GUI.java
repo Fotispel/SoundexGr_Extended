@@ -65,12 +65,10 @@ class AppController implements ActionListener {
             String backup_selected_dataset = Dashboard.getSelectedDatasetFile();
             String backup_method = Dashboard.getSelectedMethod();
 
-            Dashboard.setSelectedDatasetFile("gr.dic");
+            Dashboard.setSelectedDatasetFile("gr");
             Dashboard.setSelectedMethod("Predefined length");
             int newLen = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
-            Dashboard.appSoundexCodeLen = newLen;
-            SoundexGRExtra.LengthEncoding = newLen;
-            SoundexGRSimple.LengthEncoding = newLen;
+            Dashboard.setAppSoundexCodeLen(newLen);
 
             System.out.println("Changed settings for demo: dataset=" + Dashboard.getSelectedDatasetFile() +
                     ", method=" + Dashboard.getSelectedMethod() +
@@ -212,9 +210,7 @@ class AppController implements ActionListener {
                 public void windowClosing(WindowEvent e) {
                     Dashboard.setSelectedDatasetFile(backup_selected_dataset);
                     Dashboard.setSelectedMethod(backup_method);
-                    Dashboard.appSoundexCodeLen = backup_length;
-                    SoundexGRExtra.LengthEncoding = backup_length;
-                    SoundexGRSimple.LengthEncoding = backup_length;
+                    Dashboard.setAppSoundexCodeLen(backup_length);
                     System.out.println("Restored previous settings: dataset=" + Dashboard.getSelectedDatasetFile() +
                             ", method=" + Dashboard.getSelectedMethod() +
                             ", length=" + Dashboard.getAppSoundexCodeLen()
@@ -230,7 +226,7 @@ class AppController implements ActionListener {
             String selected = (String) Dashboard.codeLenghtsC.getSelectedItem();
             int selectedInt = Integer.parseInt(selected);
             DictionaryBasedMeasurements.invalidateMap();
-            Dashboard.setAppSoundexCodeLen(selectedInt); // TODO here it should make refresh (recompute the codes)
+            Dashboard.setAppSoundexCodeLenAndRefresh(selectedInt); // TODO here it should make refresh (recompute the codes)
             System.out.printf("Code length changed from %d to %d.", lenBefore, Dashboard.getAppSoundexCodeLen());
         }
 

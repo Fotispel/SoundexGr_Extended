@@ -67,14 +67,23 @@ public class Dashboard extends JFrame {
     }
 
     /**
+     * @param newLen the appSoundexCodeLen to set and refresh dictionary
+     */
+    public static void setAppSoundexCodeLenAndRefresh(int newLen) {
+        setAppSoundexCodeLen(newLen);
+        loadOrRefreshDictionary();
+    }
+
+    /**
      * @param newLen the appSoundexCodeLen to set
      */
+
     public static void setAppSoundexCodeLen(int newLen) {
         Dashboard.appSoundexCodeLen = newLen;
         SoundexGRExtra.LengthEncoding = newLen;
         SoundexGRSimple.LengthEncoding = newLen;
-        loadOrRefreshDictionary();
     }
+
 
     static void loadOrRefreshDictionary() {
         for (String docName : DocNames) {
@@ -118,7 +127,7 @@ public class Dashboard extends JFrame {
 
     public static int getNumberOfDistinctWords_of_DatasetFile(String docName) {
         File file = "All datasets".equals(docName)
-                ? new File("Resources/collection_words/collection_all_words.dic")
+                ? new File("Resources/collection_words/All_datasets_words.dic")
                 : new File(Paths.get("Resources/collection_words/" + docName + "_words.txt").toString());
         Set<String> words = new HashSet<>();
 
@@ -199,7 +208,7 @@ public class Dashboard extends JFrame {
      */
     Dashboard(AppController ac) {
         apCtlr = ac; // controller
-        setAppSoundexCodeLen(Dashboard.getAppSoundexCodeLen());   // it also loads/refreshes the dictionary
+        setAppSoundexCodeLenAndRefresh(Dashboard.getAppSoundexCodeLen());   // it also loads/refreshes the dictionary
         //loadOrRefreshDictionary(); // not needed
 
 

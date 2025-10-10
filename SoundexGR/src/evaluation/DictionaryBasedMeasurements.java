@@ -6,6 +6,7 @@ package evaluation;
 import client.Dashboard;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,14 +55,13 @@ public class DictionaryBasedMeasurements {
      * @param resourcePlace the resource place
      */
     public static void setDictionaryLocation(String resourcePlace) {
-        placeDict = resourcePlace;
+        String currentDir = System.getProperty("user.dir");
+        placeDict = currentDir + resourcePlace;
         try {
             FileInputStream inDict = new FileInputStream(placeDict);
-            readerDict = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+            readerDict = new BufferedReader(new InputStreamReader(inDict, StandardCharsets.UTF_8));
         } catch (FileNotFoundException e) {
             System.err.println("Error: Dictionary file not found at " + placeDict);
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
@@ -271,7 +271,7 @@ public class DictionaryBasedMeasurements {
                 if (File_index != -1) {
                     // If the file index was found, calculate the length
                     int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
-                    Dashboard.appSoundexCodeLen = length; // Set length
+                    Dashboard.setAppSoundexCodeLen(length);
                     return length;
                 } else {
                     // Handle the case where the selected file was not found
@@ -283,15 +283,15 @@ public class DictionaryBasedMeasurements {
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
-                    Dashboard.appSoundexCodeLen = 4;
+                    Dashboard.setAppSoundexCodeLen(4);
                 } else if (numWords <= 1000) {
-                    Dashboard.appSoundexCodeLen = 7;
+                    Dashboard.setAppSoundexCodeLen(7);
                 } else if (numWords <= 2000) {
-                    Dashboard.appSoundexCodeLen = 8;
+                    Dashboard.setAppSoundexCodeLen(8);
                 } else if (numWords <= 3000) {
-                    Dashboard.appSoundexCodeLen = 11;
+                    Dashboard.setAppSoundexCodeLen(11);
                 } else {
-                    Dashboard.appSoundexCodeLen = 12;
+                    Dashboard.setAppSoundexCodeLen(12);
                 }
                 return Dashboard.appSoundexCodeLen;
             case ("Hybrid method i-ii"):
@@ -307,9 +307,6 @@ public class DictionaryBasedMeasurements {
 
     /**
      * Returns all words having the same code
-     *
-     * @param code
-     * @return
      */
     public static Set<String> returnWordsHavingTheSameCode(String code, String path) {
         codesToWords = new HashMap<>();
@@ -320,16 +317,15 @@ public class DictionaryBasedMeasurements {
 
             if (path == null) {
                 dictResourcePlace = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+            } else if (Dashboard.getSelectedDatasetFile().equals("All datasets")) {
+                dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.dic";
             } else {
                 dictResourcePlace = path;
             }
-
-            dictResourcePlace = System.getProperty("user.dir") + dictResourcePlace;
-
             setDictionaryLocation(dictResourcePlace);
 
             FileInputStream inDict = new FileInputStream(placeDict);
-            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, StandardCharsets.UTF_8));
             while ((line = bfr.readLine()) != null) {
                 String wordEncoded = SoundexGRExtra.encode(line);
                 HashSet<String> wordsWithThatCode = codesToWords.get(wordEncoded);
