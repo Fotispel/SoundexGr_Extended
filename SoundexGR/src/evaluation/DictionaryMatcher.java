@@ -104,14 +104,18 @@ public class DictionaryMatcher {
      * @return a verbose string with the results of the matchings
      */
 
-     public static String getMatchings(String word, int codeLength, boolean isRunningDemo) throws IOException {
+
+    public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
         FirstMatchFound = false;
 
-        String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
-                ? "\\Resources\\collection_words\\All_datasets_words.dic"
-                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+        // Φόρτωσε dictionary μόνο αν δεν έχει φορτωθεί ήδη
+        if (codesToWords == null) {
+            String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
+                    ? "\\Resources\\collection_words\\All_datasets_words.dic"
+                    : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+            DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
+        }
 
-        DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
         String output = "";
 
         // A. Check αν η λέξη υπάρχει στο λεξικό
@@ -166,9 +170,10 @@ public class DictionaryMatcher {
         return output;
     }
 
+
     public static void main(String[] lala) throws IOException {
 
-        String[] exampleWords = { "Γιάννης", "μύνημα", "διάλιμα" };
+        String[] exampleWords = {"Γιάννης", "μύνημα", "διάλιμα"};
 
         for (int i = 0; i < exampleWords.length; i++) {
             String ex = exampleWords[i];

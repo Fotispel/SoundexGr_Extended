@@ -263,7 +263,7 @@ public class BulkCheck {
         System.out.println("Elapsed time: " + elapsedTime);
     }
 
-     public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
@@ -697,6 +697,41 @@ public class BulkCheck {
             try (BufferedWriter br_all = new BufferedWriter(new FileWriter(aggregatedFile, false))) {
                 for (String w : aggregated) {
                     br_all.write(w + "\n");
+                }
+            }
+
+
+            String inputDic = "Resources//dictionaries//EN-winedt//gr.dic";
+            String outputDic = "Resources//collection_words//gr_words.txt";
+
+            try (
+                    BufferedReader br = new BufferedReader(new FileReader(inputDic));
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(outputDic, false))
+            ) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+
+                    if (line.startsWith("(") || line.startsWith("[")) {
+                        line = line.substring(1);
+                    }
+                    if (line.endsWith(")") || line.endsWith("]")) {
+                        line = line.substring(0, line.length() - 1);
+                    }
+                    if (line.endsWith(",") || line.endsWith(".")) {
+                        line = line.substring(0, line.length() - 1);
+                    }
+                    if (line.matches("[0-9]+")) {
+                        continue;
+                    }
+                    if (!line.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) {
+                        continue;
+                    }
+                    if (line.length() <= 2) {
+                        continue;
+                    }
+
+                    bw.write(line + "\n");
                 }
             }
         } catch (IOException ex) {
