@@ -23,6 +23,7 @@ import utils.Utilities;
 
 import static client.Dashboard.setAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
+import static evaluation.DictionaryBasedMeasurements.buildCodeToWordsMap;
 import static evaluation.DictionaryBasedMeasurements.returnWordsHavingTheSameCode;
 //import org.apache.commons.text.similarity.LevenshteinDistance;
 
@@ -276,8 +277,11 @@ public class BulkCheck {
         List<Integer> sizes;
 
         List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
-        System.out.println("Misspelling file lines: " + misspellingLines.size() + " for " + misspellings_path);
         for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
+            setAppSoundexCodeLen(length_word);
+            buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"),
+                    "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt").toString());
+
             sizes = new ArrayList<>();
             Set<String> checked_codes = new HashSet<>();
 

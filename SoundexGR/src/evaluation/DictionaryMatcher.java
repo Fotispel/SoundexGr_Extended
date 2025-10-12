@@ -110,6 +110,7 @@ public class DictionaryMatcher {
 
         // Φόρτωσε dictionary μόνο αν δεν έχει φορτωθεί ήδη
         if (codesToWords == null) {
+            System.out.println("Loading dictionary for dataset: " + getSelectedDatasetFile() + " ...");
             String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
                     ? "\\Resources\\collection_words\\All_datasets_words.dic"
                     : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";

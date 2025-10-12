@@ -34,13 +34,12 @@ public class SoundexGrConfig {
                 "Resources/collection_words/" + newSelectedDatasetFile + "_words.txt").toString();
 
         try {
-            if (!newSelectedDatasetFile.equals("All datasets")) {
-                codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
-            } else {
+            if (Objects.equals(newSelectedDatasetFile, "All datasets"))
                 newds = Paths.get(System.getProperty("user.dir"),
                         "Resources/collection_words/All_datasets_words.txt").toString();
-                codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
-            }
+
+            codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
+
             selectedDatasetFile = newSelectedDatasetFile;
         } catch (IOException e) {
             System.err.println("Error while building code-to-words map for dataset: " + newSelectedDatasetFile);
