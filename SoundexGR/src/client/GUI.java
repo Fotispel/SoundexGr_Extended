@@ -31,6 +31,9 @@ import evaluation.DictionaryBasedMeasurements;
 import evaluation.DictionaryMatcher;
 import utils.Tokenizer;
 
+import static client.Dashboard.*;
+import static config.SoundexGrConfig.*;
+
 
 /**
  * AppController: The controller of the graphical add
@@ -61,18 +64,18 @@ class AppController implements ActionListener {
 
         // Live Demo
         if (event.getSource() == Dashboard.demoB) {
-            int backup_length = Dashboard.getAppSoundexCodeLen();
-            String backup_selected_dataset = Dashboard.getSelectedDatasetFile();
-            String backup_method = Dashboard.getSelectedMethod();
+            int backup_length = getAppSoundexCodeLen();
+            String backup_selected_dataset = getSelectedDatasetFile();
+            String backup_method = getSelectedMethod();
 
-            Dashboard.setSelectedDatasetFile("gr");
-            Dashboard.setSelectedMethod("Predefined length");
+            setSelectedDatasetFile("gr");
+            setSelectedMethod("Predefined length");
             int newLen = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
-            Dashboard.setAppSoundexCodeLen(newLen);
+            setAppSoundexCodeLen(newLen);
 
-            System.out.println("Changed settings for demo: dataset=" + Dashboard.getSelectedDatasetFile() +
-                    ", method=" + Dashboard.getSelectedMethod() +
-                    ", length=" + Dashboard.getAppSoundexCodeLen()
+            System.out.println("Changed settings for demo: dataset=" + getSelectedDatasetFile() +
+                    ", method=" + getSelectedMethod() +
+                    ", length=" + getAppSoundexCodeLen()
             );
 
             // Create new frame
@@ -103,8 +106,8 @@ class AppController implements ActionListener {
             editTextCheckBox.addActionListener(e -> demoTextArea.setEditable(editTextCheckBox.isSelected()));
 
             runDemoButton.addActionListener(e -> {
-                System.out.println("Run Demo with length " + Dashboard.getAppSoundexCodeLen() +
-                        " and dataset " + Dashboard.getSelectedDatasetFile());
+                System.out.println("Run Demo with length " + getAppSoundexCodeLen() +
+                        " and dataset " + getSelectedDatasetFile());
                 String inputText = demoTextArea.getText();
                 StringBuilder outputText = new StringBuilder();
 
@@ -117,10 +120,9 @@ class AppController implements ActionListener {
                         outputText.append(token).append(" ");
                         continue;
                     }
-                    System.out.println("Length before getMatchings= " + Dashboard.getAppSoundexCodeLen());
-                    String output = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true) + "\n";
-                    //System.out.println("FirstMatch: " + DictionaryMatcher.FirstMatch);
-                    if (DictionaryMatcher.FirstMatch == null) {
+                    System.out.println("Length before getMatchings= " + getAppSoundexCodeLen());
+                    String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true) + "\n";
+                    if (DictionaryMatcher.FirstMatch == null || DictionaryMatcher.FirstMatch.isEmpty()) {
                         System.out.println("No match found for: " + token);
                         outputText.append(token).append(" ");
                     } else {
@@ -153,7 +155,7 @@ class AppController implements ActionListener {
                                     wordFrame.setSize(400, 200);
                                     wordFrame.setLocationRelativeTo(null);
 
-                                    String res = DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), true);
+                                    String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true);
                                     JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
                                     for (String matching : DictionaryMatcher.rankedWords) {
                                         JButton matchingButton = new JButton(matching);
@@ -189,9 +191,16 @@ class AppController implements ActionListener {
 
 
             JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(
-                    e -> demoFrame.dispose()
-            );
+            closeButton.addActionListener(e -> {
+                setSelectedDatasetFile(backup_selected_dataset);
+                setSelectedMethod(backup_method);
+                setAppSoundexCodeLen(backup_length);
+                System.out.println("Restored previous settings: dataset=" + getSelectedDatasetFile() +
+                        ", method=" + getSelectedMethod() +
+                        ", length=" + getAppSoundexCodeLen()
+                );
+                demoFrame.dispose();
+            });
 
             JPanel controlPanel = new JPanel(new FlowLayout());
             controlPanel.add(closeButton);
@@ -208,12 +217,12 @@ class AppController implements ActionListener {
             demoFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    Dashboard.setSelectedDatasetFile(backup_selected_dataset);
-                    Dashboard.setSelectedMethod(backup_method);
-                    Dashboard.setAppSoundexCodeLen(backup_length);
-                    System.out.println("Restored previous settings: dataset=" + Dashboard.getSelectedDatasetFile() +
-                            ", method=" + Dashboard.getSelectedMethod() +
-                            ", length=" + Dashboard.getAppSoundexCodeLen()
+                    setSelectedDatasetFile(backup_selected_dataset);
+                    setSelectedMethod(backup_method);
+                    setAppSoundexCodeLen(backup_length);
+                    System.out.println("Restored previous settings: dataset=" + getSelectedDatasetFile() +
+                            ", method=" + getSelectedMethod() +
+                            ", length=" + getAppSoundexCodeLen()
                     );
                 }
             });
@@ -222,12 +231,13 @@ class AppController implements ActionListener {
 
         // Code Length
         if (event.getSource() == Dashboard.codeLenghtsC) {
-            int lenBefore = Dashboard.getAppSoundexCodeLen();
+            int lenBefore = getAppSoundexCodeLen();
             String selected = (String) Dashboard.codeLenghtsC.getSelectedItem();
+            assert selected != null;
             int selectedInt = Integer.parseInt(selected);
             DictionaryBasedMeasurements.invalidateMap();
-            Dashboard.setAppSoundexCodeLenAndRefresh(selectedInt); // TODO here it should make refresh (recompute the codes)
-            System.out.printf("Code length changed from %d to %d.", lenBefore, Dashboard.getAppSoundexCodeLen());
+            setAppSoundexCodeLenAndRefresh(selectedInt);
+            System.out.printf("Code length changed from %d to %d.", lenBefore, getAppSoundexCodeLen());
         }
 
         // SOUNDEX EXTRA
@@ -334,7 +344,7 @@ class AppController implements ActionListener {
             String output = "";
             for (String token : tokens) {
                 //output += token + ":";
-                output += DictionaryMatcher.getMatchings(token, Dashboard.getAppSoundexCodeLen(), false) + "\n";
+                output += DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), false) + "\n";
             }
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);

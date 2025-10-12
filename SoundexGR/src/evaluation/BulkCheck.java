@@ -18,6 +18,8 @@ import client.Dashboard;
 import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
+
+import static config.SoundexGrConfig.*;
 //import org.apache.commons.text.similarity.LevenshteinDistance;
 
 /**
@@ -113,7 +115,7 @@ public class BulkCheck {
         int numOfWords = 0;
         long start = System.nanoTime();
 
-        switch (Dashboard.getSelectedMethod()) {
+        switch (getSelectedMethod()) {
             case "Real-time length calculation":
                 System.out.println("Real-time length calculation");
 
@@ -185,10 +187,10 @@ public class BulkCheck {
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
                         + counter_words + " words");
 
-                length_per_DocName.put(Dashboard.getSelectedDatasetFile(), length_for_max_f_score);
+                length_per_DocName.put(getSelectedDatasetFile(), length_for_max_f_score);
 
                 length_per_docSize.put(length_for_max_f_score,
-                        Dashboard.getNumberOfTotalWords_of_DatasetFile(Dashboard.getSelectedDatasetFile()));
+                        getNumberOfTotalWords_of_DatasetFile(getSelectedDatasetFile()));
                 // System.out.println("Length per docSize: " + length_per_docSize);
 
                 if (mw == null) {
@@ -208,7 +210,7 @@ public class BulkCheck {
                 break;
             case "Predefined length":
                 SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements
-                        .calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
+                        .calculateSuggestedCodeLen(getSelectedMethod());
                 System.out.println("Predefined length and optimal length: " + SoundexGRExtra.LengthEncoding);
 
                 // print_precision_recall_f1(misspellings_path, utils, type);
@@ -244,10 +246,10 @@ public class BulkCheck {
                 throw new RuntimeException("No method selected");
         }
 
-        int distinctWordsForSelectedDataset = Dashboard.getNumberOfDistinctWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
+        int distinctWordsForSelectedDataset = getNumberOfDistinctWords_of_DatasetFile(getSelectedDatasetFile());
         System.out.println("Distinct words with length over two characters: " + distinctWordsForSelectedDataset);
 
-        int numOfWords_for_selectedDataset = Dashboard.getNumberOfTotalWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
+        int numOfWords_for_selectedDataset = getNumberOfTotalWords_of_DatasetFile(getSelectedDatasetFile());
         System.out.println("Total number of words: " + numOfWords_for_selectedDataset);
 
         long end = System.nanoTime();
@@ -261,14 +263,14 @@ public class BulkCheck {
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
-        String docName = Dashboard.getSelectedDatasetFile();
+        String docName = getSelectedDatasetFile();
         String line;
         String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
 
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 8, 9};
+            lengthsForTesting = new int[]{3, 4, 5, 7, 9, 12};
         }
 
         List<Integer> sizes;
@@ -361,7 +363,7 @@ public class BulkCheck {
 
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
 
-        Dashboard.appSoundexCodeLen = optimal_length;
+        appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
         print_precision_recall_f1(misspellings_path, utils, type);
@@ -371,14 +373,14 @@ public class BulkCheck {
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
-        String docName = Dashboard.getSelectedDatasetFile();
+        String docName = getSelectedDatasetFile();
         String line;
         String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
 
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 8, 9};
+            lengthsForTesting = new int[]{3, 4, 5, 7, 9, 12};
         }
 
         List<Integer> sizes;
@@ -388,8 +390,7 @@ public class BulkCheck {
 
             FileReader fl = new FileReader(misspellings_path);
             BufferedReader bfr = new BufferedReader(fl);
-            ArrayList<String> checked_codes = new ArrayList<>();
-
+            Set<String> checked_codes = new HashSet<>();
             while ((line = bfr.readLine()) != null) {
                 String word = line.split(",")[0];
                 String wcode = SoundexGRExtra.encode(word);
@@ -450,7 +451,7 @@ public class BulkCheck {
 
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
 
-        Dashboard.appSoundexCodeLen = optimal_length;
+        appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
         print_precision_recall_f1(misspellings_path, utils, type);
@@ -712,7 +713,7 @@ public class BulkCheck {
                 }
             }
 
-            String aggregatedFile = "Resources//collection_words//All_datasets_words.dic";
+            String aggregatedFile = "Resources//collection_words//All_datasets_words.txt";
             try (BufferedWriter br_all = new BufferedWriter(new FileWriter(aggregatedFile, false))) {
                 for (String w : aggregated) {
                     br_all.write(w + "\n");
@@ -762,10 +763,10 @@ public class BulkCheck {
         BulkCheck bulkCheckRun = new BulkCheck();
 
         try {
-            String selectedDoc = Dashboard.getSelectedDatasetFile();
+            String selectedDoc = getSelectedDatasetFile();
             String selectedWordsFile =
                     "All datasets".equals(selectedDoc)
-                            ? "Resources//collection_words//All_datasets_words.dic"
+                            ? "Resources//collection_words//All_datasets_words.txt"
                             : "Resources//collection_words//" + selectedDoc + "_words.txt";
 
             utils.readFile(selectedWordsFile);
@@ -782,7 +783,7 @@ public class BulkCheck {
             }
             String misspellingsOut =
                     "All datasets".equals(selectedDoc)
-                            ? "Resources/collection_words_misspellings/misspellings_All_datasets_words.dic"
+                            ? "Resources/collection_words_misspellings/misspellings_All_datasets_words.txt"
                             : "Resources/collection_words_misspellings/misspellings_" + selectedDoc + "_words.txt";
 
             File misspellingsDir = new File("Resources/collection_words_misspellings");
@@ -796,14 +797,14 @@ public class BulkCheck {
             utils.writeToFile(output.toString(), misspellingsOut);
 
             String misspellingFile =
-                    "All datasets".equals(Dashboard.getSelectedDatasetFile())
-                            ? "Resources//collection_words_misspellings//misspellings_All_datasets_words.dic"
-                            : "Resources//collection_words_misspellings//misspellings_" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+                    "All datasets".equals(getSelectedDatasetFile())
+                            ? "Resources//collection_words_misspellings//misspellings_All_datasets_words.txt"
+                            : "Resources//collection_words_misspellings//misspellings_" + getSelectedDatasetFile() + "_words.txt";
 
             String SelectedDatasetFile =
-                    "All datasets".equals(Dashboard.getSelectedDatasetFile())
-                            ? "Resources//collection_words//All_datasets_words.dic"
-                            : "Resources//collection_words//" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+                    "All datasets".equals(getSelectedDatasetFile())
+                            ? "Resources//collection_words//All_datasets_words.txt"
+                            : "Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt";
             System.out.println("\n[" + SelectedDatasetFile + "]: ");
             utils.readFile(misspellingFile); // Retrieve the file at index j
             bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);

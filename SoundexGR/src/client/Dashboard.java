@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static config.SoundexGrConfig.*;
 import static evaluation.BulkCheck.*;
 
 public class Dashboard extends JFrame {
@@ -53,12 +54,6 @@ public class Dashboard extends JFrame {
     static Font consoleTextfont = new Font("monospaced", Font.PLAIN, 12);  //  Font.PLAIN Font.BOLD
     static Font appButtonfont = new Font("serif", Font.PLAIN, 18);
 
-    public static int appSoundexCodeLen = 6;
-
-    private static String selectedDatasetFile = null;
-
-    private static String selectedMethod = null;
-
     /**
      * @return the appSoundexCodeLen
      */
@@ -79,7 +74,7 @@ public class Dashboard extends JFrame {
      */
 
     public static void setAppSoundexCodeLen(int newLen) {
-        Dashboard.appSoundexCodeLen = newLen;
+        appSoundexCodeLen = newLen;
         SoundexGRExtra.LengthEncoding = newLen;
         SoundexGRSimple.LengthEncoding = newLen;
     }
@@ -107,97 +102,6 @@ public class Dashboard extends JFrame {
             System.out.println("Dictionary loaded/refreshed.");
         }).start();
          */
-    }
-
-    public static String getSelectedDatasetFile() {
-        return Dashboard.selectedDatasetFile;
-    }
-
-    public static void setSelectedDatasetFile(String selectedDatasetFile) {
-        Dashboard.selectedDatasetFile = selectedDatasetFile;
-    }
-
-    public static String getSelectedMethod() {
-        return selectedMethod;
-    }
-
-    public static void setSelectedMethod(String selectedMethod) {
-        Dashboard.selectedMethod = selectedMethod;
-    }
-
-    public static int getNumberOfDistinctWords_of_DatasetFile(String docName) {
-        File file = "All datasets".equals(docName)
-                ? new File("Resources/collection_words/All_datasets_words.dic")
-                : new File(Paths.get("Resources/collection_words/" + docName + "_words.txt").toString());
-        Set<String> words = new HashSet<>();
-
-        try (Scanner sc = new Scanner(file)) {
-            while (sc.hasNext()) {
-                String w = sc.next().trim();
-                if (!w.isEmpty()) {
-                    words.add(w);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return words.size();
-    }
-
-
-    public static int getNumberOfTotalWords_of_DatasetFile(String docName) {
-        int count = 0;
-
-        String safeDocName = URLDecoder.decode(docName, StandardCharsets.UTF_8);
-
-        if (Objects.equals(safeDocName, "All datasets")) {
-            for (String dn : DocNames) {
-                String safeDn = URLDecoder.decode(dn, StandardCharsets.UTF_8);
-                File file = Paths.get("Resources", "collection", safeDn + ".txt").toFile();
-                if (!file.exists()) {
-                    file = Paths.get("Resources", "collection", safeDn + ".pdf").toFile();
-                }
-                count += getNumberOfTotalWords_of_File(file);
-            }
-        } else {
-            File file = Paths.get("Resources", "collection", safeDocName + ".txt").toFile();
-            if (!file.exists()) {
-                file = Paths.get("Resources", "collection", safeDocName + ".pdf").toFile();
-            }
-            count += getNumberOfTotalWords_of_File(file);
-        }
-
-        return count;
-    }
-
-
-    private static int getNumberOfTotalWords_of_File(File file) {
-        int count = 0;
-        if (!file.exists()) return 0;
-
-        try {
-            if (file.getName().endsWith(".pdf")) {
-                try (PDDocument document = Loader.loadPDF(file)) {
-                    PDFTextStripper stripper = new PDFTextStripper();
-                    String text = stripper.getText(document);
-
-                    String[] words = text.trim().split("\\s+");
-                    count = (text.isBlank()) ? 0 : words.length;
-                }
-            } else {
-                try (Scanner sc = new Scanner(file)) {
-                    while (sc.hasNext()) {
-                        sc.next();
-                        count++;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return count;
     }
 
 
@@ -556,10 +460,10 @@ public class Dashboard extends JFrame {
             String internalName = displayToInternal.get(displayName);
             setSelectedDatasetFile(internalName);
 
-            if (!Objects.equals(getSelectedMethod(), "")) {
+            if (Objects.equals(selectedDatasetFile, "") || getSelectedDatasetFile() == null) {
+                System.out.println("No dataset file selected.");
+            } else if (!Objects.equals(selectedMethod, "") && getSelectedMethod() != null) {
                 execute_selected_method();
-            } else {
-                System.out.println("No method selected yet.");
             }
         });
 
@@ -603,12 +507,13 @@ public class Dashboard extends JFrame {
                     Objects.equals(selectedMethod, "Hybrid method ii-iii")) ||
                     Objects.equals(selectedMethod, "");
 
-            if (Objects.equals(selectedMethod, "")) {
-                System.out.println("No method selected.");
-                return;
-            }
+            setSelectedMethod(selectedMethod);
 
-            BulkCheck.execute_selected_method();
+            if (Objects.equals(selectedMethod, "") || getSelectedMethod() == null) {
+                System.out.println("No method selected.");
+            } else if (!Objects.equals(selectedDatasetFile, "") && getSelectedDatasetFile() != null) {
+                execute_selected_method();
+            }
         });
 
         // Set font for combo box and label

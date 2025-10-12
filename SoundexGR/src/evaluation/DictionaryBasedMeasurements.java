@@ -20,6 +20,7 @@ import SoundexGR.SoundexGRExtra;
 import stemmerWrapper.StemmerWrapper;
 import evaluation.BulkCheck.*;
 
+import static config.SoundexGrConfig.*;
 import static evaluation.BulkCheck.DocNames;
 import static evaluation.BulkCheck.length_per_DocName;
 
@@ -260,7 +261,7 @@ public class DictionaryBasedMeasurements {
 
         // Search for the selected dataset file in the datasetFileList
         for (int i = 0; i < BulkCheck.DatasetFiles.length; i++) {
-            if (BulkCheck.DatasetFiles[i].endsWith(Dashboard.getSelectedDatasetFile() + ".txt")) {
+            if (BulkCheck.DatasetFiles[i].endsWith(getSelectedDatasetFile() + ".txt")) {
                 File_index = i;
                 break;
             }
@@ -270,16 +271,16 @@ public class DictionaryBasedMeasurements {
             case ("Real-time length calculation"):
                 if (File_index != -1) {
                     // If the file index was found, calculate the length
-                    int length = length_per_DocName.get(Dashboard.getSelectedDatasetFile());
+                    int length = length_per_DocName.get(getSelectedDatasetFile());
                     Dashboard.setAppSoundexCodeLen(length);
                     return length;
                 } else {
                     // Handle the case where the selected file was not found
-                    System.err.println("File not found: " + Dashboard.getSelectedDatasetFile());
+                    System.err.println("File not found: " + getSelectedDatasetFile());
                     return -1;
                 }
             case ("Predefined length"):
-                int numWords = Dashboard.getNumberOfDistinctWords_of_DatasetFile(Dashboard.getSelectedDatasetFile());
+                int numWords = getNumberOfDistinctWords_of_DatasetFile(getSelectedDatasetFile());
                 if (numWords <= 0) {
                     throw new RuntimeException("Number of words should be greater than 0");
                 } else if (numWords <= 100) {
@@ -293,7 +294,7 @@ public class DictionaryBasedMeasurements {
                 } else {
                     Dashboard.setAppSoundexCodeLen(12);
                 }
-                return Dashboard.appSoundexCodeLen;
+                return appSoundexCodeLen;
             case ("Hybrid method i-ii"):
                 return SoundexGRExtra.LengthEncoding;
             case ("Hybrid method ii-iii"):
@@ -316,9 +317,9 @@ public class DictionaryBasedMeasurements {
             String dictResourcePlace;
 
             if (path == null) {
-                dictResourcePlace = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
-            } else if (Dashboard.getSelectedDatasetFile().equals("All datasets")) {
-                dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.dic";
+                dictResourcePlace = "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+            } else if (getSelectedDatasetFile().equals("All datasets")) {
+                dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.txt";
             } else {
                 dictResourcePlace = path;
             }

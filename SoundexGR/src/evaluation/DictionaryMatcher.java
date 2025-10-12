@@ -21,6 +21,8 @@ import utils.*;
 
 import SoundexGR.SoundexGRExtra;
 
+import static config.SoundexGrConfig.getSelectedDatasetFile;
+
 /**
  * @author Yannis Tzitzikas (yannistzitzik@gmail.com)
  */
@@ -105,10 +107,10 @@ public class DictionaryMatcher {
 
         String dictResourcePlace;
 
-        if ("All datasets".equals(Dashboard.getSelectedDatasetFile())) {
-            dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.dic";
+        if ("All datasets".equals(getSelectedDatasetFile())) {
+            dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.txt";
         } else {
-            dictResourcePlace = "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile()
+            dictResourcePlace = "\\Resources\\collection_words\\" + getSelectedDatasetFile()
                     + "_words.txt";
         }
 
@@ -138,9 +140,9 @@ public class DictionaryMatcher {
         // System.out.println("Code length: " + codeLength + " for word: " + word + "
         // with code: " + wcode);
 
-        String path_to_selected_dataset = "All datasets".equals(Dashboard.getSelectedDatasetFile())
-                ? "\\Resources\\collection_words\\All_datasets_words.dic"
-                : "\\Resources\\collection_words\\" + Dashboard.getSelectedDatasetFile() + "_words.txt";
+        String path_to_selected_dataset = "All datasets".equals(getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
                 path_to_selected_dataset);
         ArrayList<String> matches = new ArrayList<>();
