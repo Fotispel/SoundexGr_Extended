@@ -185,7 +185,7 @@ public class BulkCheck {
                         length_for_max_f_score = length_for_testing;
                     }
 
-                    System.out.println("Length: " + length_for_testing + " " + avgFmeasure);
+                    //System.out.println("Length: " + length_for_testing + " " + avgFmeasure);
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
