@@ -460,9 +460,9 @@ public class Dashboard extends JFrame {
             String internalName = displayToInternal.get(displayName);
             setSelectedDatasetFile(internalName);
 
-            if (Objects.equals(selectedDatasetFile, "") || getSelectedDatasetFile() == null) {
-                System.out.println("No dataset file selected.");
-            } else if (!Objects.equals(selectedMethod, "") && getSelectedMethod() != null) {
+            if (Objects.equals(selectedMethod, "") || getSelectedMethod() == null) {
+                System.out.println("No method selected.");
+            } else if (!Objects.equals(selectedDatasetFile, "") && getSelectedDatasetFile() != null) {
                 execute_selected_method();
             }
         });
@@ -509,9 +509,9 @@ public class Dashboard extends JFrame {
 
             setSelectedMethod(selectedMethod);
 
-            if (Objects.equals(selectedMethod, "") || getSelectedMethod() == null) {
-                System.out.println("No method selected.");
-            } else if (!Objects.equals(selectedDatasetFile, "") && getSelectedDatasetFile() != null) {
+            if (Objects.equals(selectedDatasetFile, "") || getSelectedDatasetFile() == null) {
+                System.out.println("No dataset file selected.");
+            } else if (!Objects.equals(selectedMethod, "") && getSelectedMethod() != null) {
                 execute_selected_method();
             }
         });
