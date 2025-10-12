@@ -739,6 +739,7 @@ public class BulkCheck {
     }
 
     public static void execute_selected_method() {
+        long startExec = System.nanoTime();
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
 
@@ -794,6 +795,11 @@ public class BulkCheck {
             System.out.println(ex);
             Logger.getLogger(BulkCheck.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        long endExec = System.nanoTime();
+        long totalExec = endExec - startExec;
+        double elapsedTimeExec = (double) totalExec / (1000 * 1000 * 1000);
+        System.out.println("Total time for the selected method: " + elapsedTimeExec);
 
         System.out.println("\n\n");
     }

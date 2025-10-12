@@ -90,12 +90,18 @@ public class SoundexGrConfig {
                 if (!file.exists()) {
                     file = Paths.get("Resources", "collection", safeDn + ".pdf").toFile();
                 }
+                if (!file.exists()) {
+                    file = Paths.get("Resources", "collection", safeDn + ".dic").toFile();
+                }
                 count += getNumberOfTotalWords_of_File(file);
             }
         } else {
             File file = Paths.get("Resources", "collection", safeDocName + ".txt").toFile();
             if (!file.exists()) {
                 file = Paths.get("Resources", "collection", safeDocName + ".pdf").toFile();
+            }
+            if (!file.exists()) {
+                file = Paths.get("Resources", "collection", safeDocName + ".dic").toFile();
             }
             count += getNumberOfTotalWords_of_File(file);
         }

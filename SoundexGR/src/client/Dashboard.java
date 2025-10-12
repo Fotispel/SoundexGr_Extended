@@ -2,10 +2,6 @@ package client;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
-import evaluation.BulkCheck;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,9 +15,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static config.SoundexGrConfig.*;
