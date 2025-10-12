@@ -7,6 +7,7 @@ import client.Dashboard;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,6 @@ public class DictionaryBasedMeasurements {
     public static long DatasetSize = 0; // the size of the dataset
     static private String placeDict = null;    // the path for locating the dictionary in the Resources
     static private BufferedReader readerDict = null;    // it is defined in this way for locating the dictionary within the IDE and in a packaged jar
-    static Map<String, HashSet<String>> codesToWords = null;// map Codes->Words
     private static Set<String> wordsSet = null;    // the set of words of the dictionary if loaded
 
     public static long words_read = 0;
@@ -56,10 +56,13 @@ public class DictionaryBasedMeasurements {
      * @param resourcePlace the resource place
      */
     public static void setDictionaryLocation(String resourcePlace) {
-        String currentDir = System.getProperty("user.dir");
-        placeDict = currentDir + resourcePlace;
+        if (resourcePlace.startsWith("C:"))
+            placeDict = resourcePlace;
+        else
+            placeDict = Paths.get(System.getProperty("user.dir"), resourcePlace).toString();
+
         try {
-            FileInputStream inDict = new FileInputStream(placeDict);
+            FileInputStream inDict = new FileInputStream(Paths.get(placeDict).toFile());
             readerDict = new BufferedReader(new InputStreamReader(inDict, StandardCharsets.UTF_8));
         } catch (FileNotFoundException e) {
             System.err.println("Error: Dictionary file not found at " + placeDict);
@@ -309,6 +312,7 @@ public class DictionaryBasedMeasurements {
     /**
      * Returns all words having the same code
      */
+    /*
     public static Set<String> returnWordsHavingTheSameCode(String code, String path) {
         codesToWords = new HashMap<>();
         String line;
@@ -342,9 +346,41 @@ public class DictionaryBasedMeasurements {
         } catch (Exception e) {
             System.out.println(e);
         }
-
         return codesToWords.get(code);
     }
+     */
+
+    /**
+     * Returns all words having the same code
+     *
+     * @param code         the code to look for
+     * @param codesToWords the map of codes to words
+     */
+    public static Set<String> returnWordsHavingTheSameCode(String code, Map<String, Set<String>> codesToWords) {
+        return codesToWords.get(code);
+    }
+
+        /**
+     * Builds a map of codes to words from a dictionary file
+     *
+     * @param path the path to the dictionary file
+     * @return a map where each key is a code and the value is a set of words that correspond to that code
+     * @throws IOException if an I/O error occurs
+     */
+    public static Map<String, Set<String>> buildCodeToWordsMap(String path) throws IOException {
+        setDictionaryLocation(path);
+        codesToWords = new HashMap<>();
+        try (BufferedReader bfr = new BufferedReader(
+                new InputStreamReader(new FileInputStream(placeDict), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = bfr.readLine()) != null) {
+                String code = SoundexGRExtra.encode(line);
+                codesToWords.computeIfAbsent(code, k -> new HashSet<>()).add(line);
+            }
+        }
+        return codesToWords;
+    }
+
 
 
     /**

@@ -7,6 +7,8 @@ package evaluation;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -19,7 +21,9 @@ import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
 
+import static client.Dashboard.setAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
+import static evaluation.DictionaryBasedMeasurements.returnWordsHavingTheSameCode;
 //import org.apache.commons.text.similarity.LevenshteinDistance;
 
 /**
@@ -218,7 +222,7 @@ public class BulkCheck {
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
 
-                HybridMethod_executionWithK1_5(misspellings_path, null, utils, type);
+                HybridMethod_execution(misspellings_path, null, utils, type);
                 break;
 
             case "Hybrid method ii-iii":
@@ -239,7 +243,7 @@ public class BulkCheck {
                             SoundexGRExtra.LengthEncoding + 2};
                 }
 
-                HybridMethod_executionWithK1_5(misspellings_path, lengthsForTesting, utils, type);
+                HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type);
                 break;
 
             default:
@@ -259,13 +263,9 @@ public class BulkCheck {
         System.out.println("Elapsed time: " + elapsedTime);
     }
 
-    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
+     public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
-
-        String docName = getSelectedDatasetFile();
-        String line;
-        String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
 
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
@@ -274,43 +274,28 @@ public class BulkCheck {
         }
 
         List<Integer> sizes;
-        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length
-                - 1]; length_word++) {
-            sizes = new ArrayList<>();
-            SoundexGRExtra.LengthEncoding = length_word;
 
-            FileReader fl = new FileReader(misspellings_path);
-            BufferedReader bfr = new BufferedReader(fl);
-            ArrayList<String> checked_codes = new ArrayList<>();
-            while ((line = bfr.readLine()) != null) {
+        List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
+        System.out.println("Misspelling file lines: " + misspellingLines.size() + " for " + misspellings_path);
+        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
+            sizes = new ArrayList<>();
+            Set<String> checked_codes = new HashSet<>();
+
+            for (String line : misspellingLines) {
                 String word = line.split(",")[0];
                 String wcode = SoundexGRExtra.encode(word);
                 if (!checked_codes.contains(wcode)) {
-                    Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
-                            path_toWordsFile);
-
+                    Set<String> wordsHavingTheSameCode = returnWordsHavingTheSameCode(wcode, codesToWords);
                     if (wordsHavingTheSameCode != null) {
-                        sizes.add(wordsHavingTheSameCode.size()); // for K calculation
-
-                        // Add the words to the map using wcode as key
-                        List<Set<String>> words;
-                        if (SameCodeWords_per_length.containsKey(length_word)) {
-                            words = SameCodeWords_per_length.get(length_word);
-                        } else {
-                            words = new ArrayList<>();
-                        }
+                        sizes.add(wordsHavingTheSameCode.size());
+                        List<Set<String>> words = SameCodeWords_per_length.getOrDefault(length_word, new ArrayList<>());
                         words.add(wordsHavingTheSameCode);
                         SameCodeWords_per_length.put(length_word, words);
-                        // System.out.println("Length: " + length_word + " SameCodeWords_per_length: " +
-                        // SameCodeWords_per_length.get(length_word));
                     }
-
                     checked_codes.add(wcode);
                 }
             }
             listSizesPerLength.put(length_word, sizes);
-
-            bfr.close();
         }
 
         // average same code list size for K calculation
@@ -366,7 +351,7 @@ public class BulkCheck {
         appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        print_precision_recall_f1(misspellings_path, utils, type);
+        print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
     }
 
     public void HybridMethod_executionWithK1_5(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
@@ -374,7 +359,6 @@ public class BulkCheck {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
 
         String docName = getSelectedDatasetFile();
-        String line;
         String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
 
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
@@ -384,35 +368,31 @@ public class BulkCheck {
         }
 
         List<Integer> sizes;
+
+        List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
         for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
             sizes = new ArrayList<>();
             SoundexGRExtra.LengthEncoding = length_word;
 
-            FileReader fl = new FileReader(misspellings_path);
-            BufferedReader bfr = new BufferedReader(fl);
             Set<String> checked_codes = new HashSet<>();
-            while ((line = bfr.readLine()) != null) {
+
+            for (String line : misspellingLines) {
                 String word = line.split(",")[0];
                 String wcode = SoundexGRExtra.encode(word);
 
                 if (!checked_codes.contains(wcode)) {
-                    Set<String> wordsHavingTheSameCode =
-                            DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, path_toWordsFile);
-
+                    Set<String> wordsHavingTheSameCode = returnWordsHavingTheSameCode(wcode, codesToWords);
                     if (wordsHavingTheSameCode != null) {
-                        sizes.add(wordsHavingTheSameCode.size()); // for K calculation (not used now)
-
+                        sizes.add(wordsHavingTheSameCode.size());
                         List<Set<String>> words = SameCodeWords_per_length.getOrDefault(length_word, new ArrayList<>());
                         words.add(wordsHavingTheSameCode);
                         SameCodeWords_per_length.put(length_word, words);
                     }
-
                     checked_codes.add(wcode);
                 }
             }
 
             listSizesPerLength.put(length_word, sizes);
-            bfr.close();
         }
 
         float K = 1.5f;
@@ -454,7 +434,7 @@ public class BulkCheck {
         appSoundexCodeLen = optimal_length;
         SoundexGRExtra.LengthEncoding = optimal_length;
 
-        print_precision_recall_f1(misspellings_path, utils, type);
+        print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
     }
 
     void print_precision_recall_f1(String misspellings_path, Utilities utils, String type) throws IOException {

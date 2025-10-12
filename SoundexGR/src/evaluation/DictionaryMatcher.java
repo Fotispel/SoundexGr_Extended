@@ -4,6 +4,7 @@
 package evaluation;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import utils.*;
 
 import SoundexGR.SoundexGRExtra;
 
+import static config.SoundexGrConfig.codesToWords;
 import static config.SoundexGrConfig.getSelectedDatasetFile;
 
 /**
@@ -102,24 +104,18 @@ public class DictionaryMatcher {
      * @return a verbose string with the results of the matchings
      */
 
-    public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
+     public static String getMatchings(String word, int codeLength, boolean isRunningDemo) throws IOException {
         FirstMatchFound = false;
 
-        String dictResourcePlace;
-
-        if ("All datasets".equals(getSelectedDatasetFile())) {
-            dictResourcePlace = "\\Resources\\collection_words\\All_datasets_words.txt";
-        } else {
-            dictResourcePlace = "\\Resources\\collection_words\\" + getSelectedDatasetFile()
-                    + "_words.txt";
-        }
+        String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\All_datasets_words.dic"
+                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
 
         DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
-
         String output = "";
-        // A. Check if word exists in the dictionary
-        if (
-        lookup(word)) { // if it exists
+
+        // A. Check αν η λέξη υπάρχει στο λεξικό
+        if (lookup(word)) {
             FirstMatch = word;
             FirstMatchFound = true;
             return "The word \"" + word + "\" exists in the dictionary.";
@@ -128,85 +124,49 @@ public class DictionaryMatcher {
         }
 
         // B1. Code length
-        // TODO: An den brei kamia na meiwnei to len na kanei null to map kai na
-        // ksanaprospathei ews otou exei estw mia
-
-        // int nwordsFound = 0;
-        // for (int codeLen=12; codeLen>=4; codeLen--) {
-
-        //codeLength = DictionaryBasedMeasurements.calculateSuggestedCodeLen(Dashboard.getSelectedMethod());
         SoundexGRExtra.LengthEncoding = codeLength;
         String wcode = SoundexGRExtra.encode(word);
-        // System.out.println("Code length: " + codeLength + " for word: " + word + "
-        // with code: " + wcode);
 
-        String path_to_selected_dataset = "All datasets".equals(getSelectedDatasetFile())
-                ? "\\Resources\\collection_words\\All_datasets_words.txt"
-                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
-        Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode,
-                path_to_selected_dataset);
+        Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, codesToWords);
         ArrayList<String> matches = new ArrayList<>();
+
         if (wordsHavingTheSameCode != null) {
-            for (String m : wordsHavingTheSameCode) {
-                matches.add(m);
-            }
+            matches.addAll(wordsHavingTheSameCode);
 
-            output += "* Approximate Matches (words having the same SoundexGR codes with \"" + word
-                    + "\" with code length = " + codeLength + "):";
-            output += matches.size() + " matches" + "\n";
+            output += "* Approximate Matches (words having the same SoundexGR code with \"" + word
+                    + "\" with code length = " + codeLength + "): ";
+            output += matches.size() + " matches\n";
             output += matches.toString() + "\n";
-            // edit distance-base ranking
-            output += "\n* Ranking of the above " + matches.size()
-                    + " words wrt Edit distance (showing the Edit Dist of each word):\n";
 
+            // Ranking με βάση Edit Distance
+            output += "\n* Ranking of the above " + matches.size()
+                    + " words wrt Edit distance:\n";
             output += RankByEditDistance(word, wordsHavingTheSameCode).toString();
             output += "\n\n";
-            // by edit dist directly from the dictionary
 
         } else {
-            output += "No word with the same SoundexGR code was found for this word. Try reducing the code length :(\n";
+            output += "No word with the same SoundexGR code was found. Try reducing the code length :(\n";
         }
 
-        // Edit Distance based:
+        // Επιπλέον approximate matches με βάση Edit Distance απευθείας από το λεξικό
         int K = 3;
-        output += "* Approximate Matches directly from the Dictionary ordered by Edit distance (less than " + K + "):";
+        output += "* Approximate Matches directly from the Dictionary ordered by Edit distance (less than " + K + "): ";
         Set<String> matchesByED = getDicWordByEditDist(word, K);
         output += matchesByED.size() + " matches\n";
-        // System.out.println("\n>>>"+getDicWordByEditDist(word,K));
-        String ranked = RankByEditDistance(word, matchesByED).toString();
-        output += ranked;
-        rankedWords =
+        output += RankByEditDistance(word, matchesByED).toString();
 
-                RankByEditDistance(word, matchesByED)
-                        .
+        rankedWords = RankByEditDistance(word, matchesByED)
+                .keySet()
+                .stream()
+                .limit(10)
+                .collect(Collectors.toList());
 
-                        keySet().
-
-                        stream()
-                        .
-
-                        limit(10)
-                        .
-
-                        collect(Collectors.toList());
         output += "\n";
 
         return output;
-
-        /*
-         * if (wordsHavingTheSameCode!=null) {
-         * for (String w: wordsHavingTheSameCode) {
-         * output+= " " + w;
-         * //System.out.println(output);
-         * }
-         * output+="\n";
-         * } else output +="No word with tha code was found.\n";
-         * 
-         * retun lala
-         */
     }
 
-    public static void main(String[] lala) {
+    public static void main(String[] lala) throws IOException {
 
         String[] exampleWords = { "Γιάννης", "μύνημα", "διάλιμα" };
 

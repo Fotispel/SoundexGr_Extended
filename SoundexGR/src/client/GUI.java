@@ -121,8 +121,11 @@ class AppController implements ActionListener {
                         continue;
                     }
                     System.out.println("Length before getMatchings= " + getAppSoundexCodeLen());
-                    String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true) + "\n";
-                    if (DictionaryMatcher.FirstMatch == null || DictionaryMatcher.FirstMatch.isEmpty()) {
+                    try {
+                        String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true) + "\n";
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }                    if (DictionaryMatcher.FirstMatch == null || DictionaryMatcher.FirstMatch.isEmpty()) {
                         System.out.println("No match found for: " + token);
                         outputText.append(token).append(" ");
                     } else {
@@ -155,7 +158,11 @@ class AppController implements ActionListener {
                                     wordFrame.setSize(400, 200);
                                     wordFrame.setLocationRelativeTo(null);
 
-                                    String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true);
+                                    try {
+                                        String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true);
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
                                     JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
                                     for (String matching : DictionaryMatcher.rankedWords) {
                                         JButton matchingButton = new JButton(matching);
@@ -344,7 +351,11 @@ class AppController implements ActionListener {
             String output = "";
             for (String token : tokens) {
                 //output += token + ":";
-                output += DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), false) + "\n";
+                try {
+                    output += DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), false) + "\n";
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);

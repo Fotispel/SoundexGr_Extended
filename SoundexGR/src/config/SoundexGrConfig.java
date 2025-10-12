@@ -1,6 +1,7 @@
 package config;
 
 import client.Dashboard;
+import evaluation.DictionaryBasedMeasurements;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -9,15 +10,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 import static evaluation.BulkCheck.DocNames;
 
 public class SoundexGrConfig {
+    public static Map<String, Set<String>> codesToWords = new HashMap<>();
+
     public static int appSoundexCodeLen = 6;
 
     public static String selectedDatasetFile = null;
@@ -29,7 +30,19 @@ public class SoundexGrConfig {
     }
 
     public static void setSelectedDatasetFile(String newSelectedDatasetFile) {
-        selectedDatasetFile = newSelectedDatasetFile;
+        String newds = Paths.get(System.getProperty("user.dir"),
+                "Resources/collection_words/" + newSelectedDatasetFile + "_words.txt").toString();
+
+        try {
+            if (!newSelectedDatasetFile.equals("All datasets")) {
+                codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
+            }
+            selectedDatasetFile = newSelectedDatasetFile;
+        } catch (IOException e) {
+            System.err.println("Error while building code-to-words map for dataset: " + newSelectedDatasetFile);
+            e.printStackTrace();
+            codesToWords = new HashMap<>();
+        }
     }
 
     public static String getSelectedMethod() {
