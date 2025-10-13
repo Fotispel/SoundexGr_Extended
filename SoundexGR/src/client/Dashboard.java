@@ -2,6 +2,7 @@ package client;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
+import evaluation.DictionaryBasedMeasurements;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +16,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static config.SoundexGrConfig.*;
@@ -456,6 +458,20 @@ public class Dashboard extends JFrame {
             if (Objects.equals(selectedMethod, "") || getSelectedMethod() == null) {
                 System.out.println("No method selected.");
             } else if (!Objects.equals(selectedDatasetFile, "") && getSelectedDatasetFile() != null) {
+                String newds = Paths.get(System.getProperty("user.dir"),
+                        "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+
+                if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                    newds = Paths.get(System.getProperty("user.dir"),
+                            "Resources/collection_words/All_datasets_words.txt").toString();
+
+                try {
+                    codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds); //changes each time a method or dataset is selected
+                    //System.out.println("Built codesToWords for dataset: " + newds);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+
                 execute_selected_method();
             }
         });
@@ -505,6 +521,19 @@ public class Dashboard extends JFrame {
             if (Objects.equals(selectedDatasetFile, "") || getSelectedDatasetFile() == null) {
                 System.out.println("No dataset file selected.");
             } else if (!Objects.equals(selectedMethod, "") && getSelectedMethod() != null) {
+                String newds = Paths.get(System.getProperty("user.dir"),
+                        "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+
+                if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                    newds = Paths.get(System.getProperty("user.dir"),
+                            "Resources/collection_words/All_datasets_words.txt").toString();
+
+                try {
+                    codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds); //changes each time a method or dataset is selected
+                    //System.out.println("Built codesToWords for dataset: " + newds);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 execute_selected_method();
             }
         });
