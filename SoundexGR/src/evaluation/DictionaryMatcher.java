@@ -3,12 +3,8 @@
  */
 package evaluation;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -17,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import client.Dashboard;
 import utils.*;
 
 import SoundexGR.SoundexGRExtra;
@@ -105,7 +100,7 @@ public class DictionaryMatcher {
      */
 
 
-    public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
+    public static String getMatchings(String word, int codeLength) {
         FirstMatchFound = false;
 
         System.out.println("Loading dictionary for dataset: " + getSelectedDatasetFile() + " ...");
@@ -116,7 +111,6 @@ public class DictionaryMatcher {
 
         String output = "";
 
-        // A. Check αν η λέξη υπάρχει στο λεξικό
         if (lookup(word)) {
             FirstMatch = word;
             FirstMatchFound = true;
@@ -125,17 +119,12 @@ public class DictionaryMatcher {
             output = "APPROXIMATE MATCHES FOR " + word + "\n";
         }
 
-        // B1. Code length
-        System.out.println("BEFORE : SoundexGRExtra.LengthEncoding = " + SoundexGRExtra.LengthEncoding);
         String wcode = SoundexGRExtra.encode(word);
 
-        System.out.println("AFTER : SoundexGRExtra.LengthEncoding = " + SoundexGRExtra.LengthEncoding);
-
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, codesToWords);
-        ArrayList<String> matches = new ArrayList<>();
 
         if (wordsHavingTheSameCode != null) {
-            matches.addAll(wordsHavingTheSameCode);
+            ArrayList<String> matches = new ArrayList<>(wordsHavingTheSameCode);
 
             output += "* Approximate Matches (words having the same SoundexGR code with \"" + word
                     + "\" with code length = " + codeLength + "): ";
@@ -152,7 +141,6 @@ public class DictionaryMatcher {
             output += "No word with the same SoundexGR code was found. Try reducing the code length :(\n";
         }
 
-        // Επιπλέον approximate matches με βάση Edit Distance απευθείας από το λεξικό
         int K = 3;
         output += "* Approximate Matches directly from the Dictionary ordered by Edit distance (less than " + K + "): ";
         Set<String> matchesByED = getDicWordByEditDist(word, K);
@@ -177,7 +165,7 @@ public class DictionaryMatcher {
 
         for (int i = 0; i < exampleWords.length; i++) {
             String ex = exampleWords[i];
-            String m = getMatchings(ex, 12, false);
+            String m = getMatchings(ex, 12);
             System.out.println(ex + "\t: " + m);
         }
     }

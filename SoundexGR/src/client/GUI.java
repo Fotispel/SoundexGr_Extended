@@ -121,7 +121,7 @@ class AppController implements ActionListener {
                         continue;
                     }
                     System.out.println("Length before getMatchings= " + getAppSoundexCodeLen());
-                    String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true) + "\n";
+                    String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen()) + "\n";
                     if (DictionaryMatcher.FirstMatch == null || DictionaryMatcher.FirstMatch.isEmpty()) {
                         System.out.println("No match found for: " + token);
                         outputText.append(token).append(" ");
@@ -155,7 +155,7 @@ class AppController implements ActionListener {
                                     wordFrame.setSize(400, 200);
                                     wordFrame.setLocationRelativeTo(null);
 
-                            String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), true);
+                            String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen());
                             JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
                                     for (String matching : DictionaryMatcher.rankedWords) {
                                         JButton matchingButton = new JButton(matching);
@@ -344,7 +344,7 @@ class AppController implements ActionListener {
             String output = "";
             for (String token : tokens) {
                 //output += token + ":";
-                output += DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen(), false) + "\n";
+                output += DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen()) + "\n";
             }
             Dashboard.textOutputArea.setText(output);
             Dashboard.textOutputArea.setCaretPosition(0);

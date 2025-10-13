@@ -188,8 +188,8 @@ public class BulkCheck {
                     float avgPrecision = total_pre / counter_words;
                     float avgRecall = total_rec / counter_words;
                     float avgFmeasure = 2 * avgPrecision * avgRecall / (avgPrecision + avgRecall);
-                    // System.out.println("F-measure: " + avgFmeasure + " for length " +
-                    // length_for_testing + " with " + counter_words + " words");
+
+                    System.out.println("Length: " + length_for_testing + " -> F-measure: " + avgFmeasure);
 
                     if (avgFmeasure > max_f_score) {
                         max_f_score = avgFmeasure;
@@ -236,7 +236,7 @@ public class BulkCheck {
                 setAppSoundexCodeLen(newLength);
                 System.out.println("Predefined length and optimal length: " + newLength);
 
-                print_precision_recall_f1(misspellings_path, utils, type);
+                //print_precision_recall_f1(misspellings_path, utils, type);
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
@@ -284,6 +284,17 @@ public class BulkCheck {
         System.out.println("Elapsed time: " + elapsedTime);
     }
 
+
+    /**
+     * Hybrid method execution
+     *
+     * @param misspellings_path the file with the eval collection
+     * @param lengthsForTesting an array with the lengths to be tested
+     * @param utils             Utilities object
+     * @param type              the matching (soundex) algorith to be applied
+     * @param K_fixed           if not null then it is the fixed K value to be used, otherwise K is calculated
+     * @throws IOException
+     */
     public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type, Float K_fixed)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
@@ -376,6 +387,14 @@ public class BulkCheck {
     }
 
 
+    /**
+     * It computes and prints precision/recall/f-measure
+     *
+     * @param misspellings_path the file with the eval collection
+     * @param utils             Utilities object
+     * @param type              the matching (soundex) algorith to be applied
+     * @throws IOException
+     **/
     void print_precision_recall_f1(String misspellings_path, Utilities utils, String type) throws IOException {
         float totalPrecision = 0;
         float totalRecall = 0;
@@ -577,6 +596,12 @@ public class BulkCheck {
         }
     }
 
+    /**
+     * Writes the words of each document to a separate file name_words.txt
+     *
+     * @param allWordsByDoc
+     * @param DocNames
+     */
     private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
         try {
             if (allWordsByDoc.isEmpty()) {
@@ -712,6 +737,10 @@ public class BulkCheck {
         return DocNames;
     }
 
+    /**
+     * Initializes the values and creates the misspellings files for executing the selected method and
+     * finding the optimal length
+     */
     public static void execute_selected_method() {
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
