@@ -149,7 +149,7 @@ public class BulkCheck {
                     }
                 }
 
-                for (int length_for_testing = 1; length_for_testing <= 15; length_for_testing++) {
+                for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
                     setAppSoundexCodeLen(length_for_testing);
                     String newds = Paths.get(System.getProperty("user.dir"),
