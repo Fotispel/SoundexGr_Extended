@@ -21,6 +21,7 @@ import utils.MeasurementsWriter;
 //import java.util.stream.Collectors;
 import utils.Utilities;
 
+import static client.Dashboard.getAppSoundexCodeLen;
 import static client.Dashboard.setAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
 import static evaluation.DictionaryBasedMeasurements.buildCodeToWordsMap;
@@ -58,7 +59,7 @@ public class BulkCheck {
                 counter++;
             }
         }
-        return res.size() == 0 ? 0 : counter / (float) res.size();
+        return res.isEmpty() ? 0 : counter / (float) res.size();
     }
 
     /**
@@ -148,9 +149,18 @@ public class BulkCheck {
                     }
                 }
 
-                for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
+                for (int length_for_testing = 1; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
-                    SoundexGRExtra.LengthEncoding = length_for_testing;
+                    setAppSoundexCodeLen(length_for_testing);
+                    String newds = Paths.get(System.getProperty("user.dir"),
+                            "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+
+                    if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                        newds = Paths.get(System.getProperty("user.dir"),
+                                "Resources/collection_words/All_datasets_words.txt").toString();
+                    codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
+
+
                     counter_words = 0;
 
                     numOfWords = 0;
@@ -185,12 +195,19 @@ public class BulkCheck {
                         max_f_score = avgFmeasure;
                         length_for_max_f_score = length_for_testing;
                     }
-
-                    //System.out.println("Length: " + length_for_testing + " " + avgFmeasure);
                 }
 
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
                         + counter_words + " words");
+
+                String newds = Paths.get(System.getProperty("user.dir"),
+                        "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+
+                if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                    newds = Paths.get(System.getProperty("user.dir"),
+                            "Resources/collection_words/All_datasets_words.txt").toString();
+                codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
+
 
                 length_per_DocName.put(getSelectedDatasetFile(), length_for_max_f_score);
 
@@ -214,37 +231,40 @@ public class BulkCheck {
                 // avgPrecision, avgRecall, avgFmeasure);
                 break;
             case "Predefined length":
-                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements
+                int newLength = DictionaryBasedMeasurements
                         .calculateSuggestedCodeLen(getSelectedMethod());
-                System.out.println("Predefined length and optimal length: " + SoundexGRExtra.LengthEncoding);
+                setAppSoundexCodeLen(newLength);
+                System.out.println("Predefined length and optimal length: " + newLength);
 
-                // print_precision_recall_f1(misspellings_path, utils, type);
+                print_precision_recall_f1(misspellings_path, utils, type);
                 break;
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
 
-                HybridMethod_execution(misspellings_path, null, utils, type);
+                HybridMethod_execution(misspellings_path, null, utils, type, null);
                 break;
 
             case "Hybrid method ii-iii":
-                SoundexGRExtra.LengthEncoding = DictionaryBasedMeasurements
-                        .calculateSuggestedCodeLen("Predefined length");
-                assert SoundexGRExtra.LengthEncoding != -1; // if length = -1 then there is no suitable code length
+                setAppSoundexCodeLen(DictionaryBasedMeasurements
+                        .calculateSuggestedCodeLen("Predefined length"));
+
+                int pre_length = getAppSoundexCodeLen();
+                assert pre_length != -1; // if length = -1 then there is no suitable code length
 
                 int[] lengthsForTesting;
-                if (SoundexGRExtra.LengthEncoding > 2) {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 2,
-                            SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
-                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
-                } else if (SoundexGRExtra.LengthEncoding > 1) {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding - 1, SoundexGRExtra.LengthEncoding,
-                            SoundexGRExtra.LengthEncoding + 1, SoundexGRExtra.LengthEncoding + 2};
+                if (pre_length > 2) {
+                    lengthsForTesting = new int[]{pre_length - 2,
+                            pre_length - 1, pre_length,
+                            pre_length + 1, pre_length + 2};
+                } else if (pre_length > 1) {
+                    lengthsForTesting = new int[]{pre_length - 1, pre_length,
+                            pre_length + 1, pre_length + 2};
                 } else {
-                    lengthsForTesting = new int[]{SoundexGRExtra.LengthEncoding, SoundexGRExtra.LengthEncoding + 1,
-                            SoundexGRExtra.LengthEncoding + 2};
+                    lengthsForTesting = new int[]{pre_length, pre_length + 1,
+                            pre_length + 2};
                 }
 
-                HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type);
+                HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type, null);
                 break;
 
             default:
@@ -264,30 +284,33 @@ public class BulkCheck {
         System.out.println("Elapsed time: " + elapsedTime);
     }
 
-    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type, Float K_fixed)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
-
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
             lengthsForTesting = new int[]{3, 4, 5, 7, 9, 12};
         }
 
-        List<Integer> sizes;
-
         List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
+
         for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
             setAppSoundexCodeLen(length_word);
-            buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"),
-                    "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt").toString());
 
-            sizes = new ArrayList<>();
+            String dsPath = "All datasets".equals(getSelectedDatasetFile())
+                    ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                    : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+
+            buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"), dsPath).toString());
+
+            List<Integer> sizes = new ArrayList<>();
             Set<String> checked_codes = new HashSet<>();
 
             for (String line : misspellingLines) {
                 String word = line.split(",")[0];
                 String wcode = SoundexGRExtra.encode(word);
+
                 if (!checked_codes.contains(wcode)) {
                     Set<String> wordsHavingTheSameCode = returnWordsHavingTheSameCode(wcode, codesToWords);
                     if (wordsHavingTheSameCode != null) {
@@ -302,144 +325,56 @@ public class BulkCheck {
             listSizesPerLength.put(length_word, sizes);
         }
 
-        // average same code list size for K calculation
-        float totalSum = 0;
-        int count = 0;
+        // υπολογισμός K αν δεν έχει δοθεί
+        float K;
+        if (K_fixed != null) {
+            K = K_fixed;
+            System.out.println("Fixed K value: " + K);
+        } else {
+            float totalSum = 0;
+            int count = 0;
+            for (List<Integer> sizes : listSizesPerLength.values()) {
+                for (int s : sizes) {
+                    totalSum += s;
+                    count++;
+                }
+            }
+            K = count > 0 ? totalSum / count : 1.5f;
+            System.out.println("Calculated K: " + K);
+        }
+
+        float[] avg_list_size = new float[30];
+
         for (int length : listSizesPerLength.keySet()) {
-            sizes = listSizesPerLength.get(length);
-            for (int s : sizes) {
-                totalSum += s;
-                count++;
-            }
-        }
-        float K = count > 0 ? totalSum / count : 1.5f;
-        System.out.println("Calculated K: " + K);
-
-        float[] avg_list_size = new float[30];
-
-        // Calculate average list size for each length
-        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
-            if (SameCodeWords_per_length.containsKey(length)) {
-                List<Set<String>> words = SameCodeWords_per_length.get(length);
-
-                // Sum the sizes of all sets
-                int totalSize = 0;
-                for (Set<String> wordSet : words) {
-                    totalSize += wordSet.size();
-                }
-
-                // Calculate the average list size
-                float avgSize = words.isEmpty() ? 0 : (float) totalSize / words.size();
-                avg_list_size[length] = avgSize;
-            } else {
-                // System.out.println("No words with length " + length);
-            }
+            List<Set<String>> words = SameCodeWords_per_length.get(length);
+            int totalSize = 0;
+            for (Set<String> wordSet : words) totalSize += wordSet.size();
+            avg_list_size[length] = words.isEmpty() ? 0 : (float) totalSize / words.size();
         }
 
         int optimal_length = -1;
         float min_difference_from_K = Float.MAX_VALUE;
 
-        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
-            if (SameCodeWords_per_length.containsKey(length)) {
-                float difference = Math.abs(K - avg_list_size[length]);
-
-                if (difference < min_difference_from_K) {
-                    min_difference_from_K = difference;
-                    optimal_length = length;
-                }
+        for (int length : listSizesPerLength.keySet()) {
+            float difference = Math.abs(K - avg_list_size[length]);
+            if (difference < min_difference_from_K) {
+                min_difference_from_K = difference;
+                optimal_length = length;
             }
         }
 
         System.out.println("Optimal length for Hybrid method: " + optimal_length);
 
-        appSoundexCodeLen = optimal_length;
-        SoundexGRExtra.LengthEncoding = optimal_length;
+        setAppSoundexCodeLen(optimal_length);
+        String dsPath = "All datasets".equals(getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+
+        buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"), dsPath).toString());
 
         print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
     }
 
-    public void HybridMethod_executionWithK1_5(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type)
-            throws IOException {
-        Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
-
-        String docName = getSelectedDatasetFile();
-        String path_toWordsFile = "\\Resources\\collection_words\\" + docName + "_words.txt";
-
-        Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
-
-        if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{3, 4, 5, 7, 9, 12};
-        }
-
-        List<Integer> sizes;
-
-        List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
-        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
-            sizes = new ArrayList<>();
-            SoundexGRExtra.LengthEncoding = length_word;
-
-            Set<String> checked_codes = new HashSet<>();
-
-            for (String line : misspellingLines) {
-                String word = line.split(",")[0];
-                String wcode = SoundexGRExtra.encode(word);
-
-                if (!checked_codes.contains(wcode)) {
-                    Set<String> wordsHavingTheSameCode = returnWordsHavingTheSameCode(wcode, codesToWords);
-                    if (wordsHavingTheSameCode != null) {
-                        sizes.add(wordsHavingTheSameCode.size());
-                        List<Set<String>> words = SameCodeWords_per_length.getOrDefault(length_word, new ArrayList<>());
-                        words.add(wordsHavingTheSameCode);
-                        SameCodeWords_per_length.put(length_word, words);
-                    }
-                    checked_codes.add(wcode);
-                }
-            }
-
-            listSizesPerLength.put(length_word, sizes);
-        }
-
-        float K = 1.5f;
-        System.out.println("Fixed K value: " + K);
-
-        float[] avg_list_size = new float[30];
-
-        // Calculate average list size for each length
-        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
-            if (SameCodeWords_per_length.containsKey(length)) {
-                List<Set<String>> words = SameCodeWords_per_length.get(length);
-
-                int totalSize = 0;
-                for (Set<String> wordSet : words) {
-                    totalSize += wordSet.size();
-                }
-
-                float avgSize = words.isEmpty() ? 0 : (float) totalSize / words.size();
-                avg_list_size[length] = avgSize;
-            }
-        }
-
-        int optimal_length = -1;
-        float min_difference_from_K = Float.MAX_VALUE;
-
-        for (int length = lengthsForTesting[0]; length <= lengthsForTesting[lengthsForTesting.length - 1]; length++) {
-            if (SameCodeWords_per_length.containsKey(length)) {
-                float difference = Math.abs(K - avg_list_size[length]);
-
-                if (difference < min_difference_from_K) {
-                    min_difference_from_K = difference;
-                    optimal_length = length;
-                }
-            }
-        }
-
-        System.out.println("Optimal length for Hybrid method: " + optimal_length);
-
-        appSoundexCodeLen = optimal_length;
-        SoundexGRExtra.LengthEncoding = optimal_length;
-
-        print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
-    }
 
     void print_precision_recall_f1(String misspellings_path, Utilities utils, String type) throws IOException {
         float totalPrecision = 0;
@@ -778,7 +713,6 @@ public class BulkCheck {
     }
 
     public static void execute_selected_method() {
-        long startExec = System.nanoTime();
         Utilities utils = new Utilities();
         BulkCheck bulkCheckRun = new BulkCheck();
 
@@ -834,11 +768,6 @@ public class BulkCheck {
             System.out.println(ex);
             Logger.getLogger(BulkCheck.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        long endExec = System.nanoTime();
-        long totalExec = endExec - startExec;
-        double elapsedTimeExec = (double) totalExec / (1000 * 1000 * 1000);
-        System.out.println("Total time for the selected method: " + elapsedTimeExec);
 
         System.out.println("\n\n");
     }

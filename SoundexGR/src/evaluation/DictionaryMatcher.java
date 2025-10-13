@@ -108,14 +108,11 @@ public class DictionaryMatcher {
     public static String getMatchings(String word, int codeLength, boolean isRunningDemo) {
         FirstMatchFound = false;
 
-        // Φόρτωσε dictionary μόνο αν δεν έχει φορτωθεί ήδη
-        if (codesToWords == null) {
-            System.out.println("Loading dictionary for dataset: " + getSelectedDatasetFile() + " ...");
-            String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
-                    ? "\\Resources\\collection_words\\All_datasets_words.dic"
-                    : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
-            DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
-        }
+        System.out.println("Loading dictionary for dataset: " + getSelectedDatasetFile() + " ...");
+        String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+        DictionaryBasedMeasurements.setDictionaryLocation(dictResourcePlace);
 
         String output = "";
 
@@ -129,8 +126,10 @@ public class DictionaryMatcher {
         }
 
         // B1. Code length
-        SoundexGRExtra.LengthEncoding = codeLength;
+        System.out.println("BEFORE : SoundexGRExtra.LengthEncoding = " + SoundexGRExtra.LengthEncoding);
         String wcode = SoundexGRExtra.encode(word);
+
+        System.out.println("AFTER : SoundexGRExtra.LengthEncoding = " + SoundexGRExtra.LengthEncoding);
 
         Set<String> wordsHavingTheSameCode = DictionaryBasedMeasurements.returnWordsHavingTheSameCode(wcode, codesToWords);
         ArrayList<String> matches = new ArrayList<>();

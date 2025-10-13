@@ -56,6 +56,10 @@ public class DictionaryBasedMeasurements {
      * @param resourcePlace the resource place
      */
     public static void setDictionaryLocation(String resourcePlace) {
+        resourcePlace = "All datasets".equals(getSelectedDatasetFile())
+                ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+
         if (resourcePlace.startsWith("C:"))
             placeDict = resourcePlace;
         else
@@ -236,9 +240,8 @@ public class DictionaryBasedMeasurements {
         String line;
 
         try {
-            // Use FileInputStream for local file system path
-            FileInputStream inDict = new FileInputStream(placeDict); // This is for local file paths
-            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, "UTF-8"));
+            FileInputStream inDict = new FileInputStream(placeDict);
+            BufferedReader bfr = new BufferedReader(new InputStreamReader(inDict, StandardCharsets.UTF_8));
 
             while ((line = bfr.readLine()) != null) {
                 wordsSet.add(line);
@@ -360,7 +363,7 @@ public class DictionaryBasedMeasurements {
         return codesToWords.get(code);
     }
 
-        /**
+    /**
      * Builds a map of codes to words from a dictionary file
      *
      * @param path the path to the dictionary file
@@ -380,7 +383,6 @@ public class DictionaryBasedMeasurements {
         }
         return codesToWords;
     }
-
 
 
     /**

@@ -52,7 +52,7 @@ public class Dashboard extends JFrame {
     /**
      * @return the appSoundexCodeLen
      */
-    static int getAppSoundexCodeLen() {
+    public static int getAppSoundexCodeLen() {
         return appSoundexCodeLen;
     }
 
@@ -528,12 +528,6 @@ public class Dashboard extends JFrame {
                     newds = Paths.get(System.getProperty("user.dir"),
                             "Resources/collection_words/All_datasets_words.txt").toString();
 
-                try {
-                    codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds); //changes each time a method or dataset is selected
-                    //System.out.println("Built codesToWords for dataset: " + newds);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
                 execute_selected_method();
             }
         });
