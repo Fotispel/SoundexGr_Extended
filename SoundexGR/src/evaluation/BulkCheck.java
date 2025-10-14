@@ -189,7 +189,7 @@ public class BulkCheck {
                     float avgRecall = total_rec / counter_words;
                     float avgFmeasure = 2 * avgPrecision * avgRecall / (avgPrecision + avgRecall);
 
-                    System.out.println("Length: " + length_for_testing + " -> F-measure: " + avgFmeasure);
+                    //System.out.println("Length: " + length_for_testing + " -> F-measure: " + avgFmeasure);
 
                     if (avgFmeasure > max_f_score) {
                         max_f_score = avgFmeasure;
@@ -336,7 +336,6 @@ public class BulkCheck {
             listSizesPerLength.put(length_word, sizes);
         }
 
-        // υπολογισμός K αν δεν έχει δοθεί
         float K;
         if (K_fixed != null) {
             K = K_fixed;
@@ -383,7 +382,7 @@ public class BulkCheck {
 
         buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"), dsPath).toString());
 
-        print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
+        // print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
     }
 
 
