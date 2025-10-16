@@ -13,20 +13,17 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
-import client.Dashboard;
 import utils.MeasurementsWriter;
-//import java.util.stream.Collectors;
 import utils.Utilities;
-
 import static client.Dashboard.getAppSoundexCodeLen;
 import static client.Dashboard.setAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
 import static evaluation.DictionaryBasedMeasurements.buildCodeToWordsMap;
 import static evaluation.DictionaryBasedMeasurements.returnWordsHavingTheSameCode;
-//import org.apache.commons.text.similarity.LevenshteinDistance;
+
+
 
 /**
  * @author: Antrei Kavros (additions by Yannis Tzitzikas)

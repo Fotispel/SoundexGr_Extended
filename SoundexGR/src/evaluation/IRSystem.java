@@ -2,7 +2,6 @@ package evaluation;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,8 +12,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import evaluation.Tokenizer;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

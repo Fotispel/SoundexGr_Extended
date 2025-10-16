@@ -16,13 +16,10 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import SoundexGR.SoundexGRExtra;
 import stemmerWrapper.StemmerWrapper;
 import evaluation.BulkCheck.*;
-
 import static config.SoundexGrConfig.*;
-import static evaluation.BulkCheck.DocNames;
 import static evaluation.BulkCheck.length_per_DocName;
 
 /**
