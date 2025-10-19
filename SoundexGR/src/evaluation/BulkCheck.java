@@ -45,8 +45,8 @@ public class BulkCheck {
      * It takes as input a response (res) and the set of correct answers (exp)
      * and computes the precision
      *
-     * @param exp
-     * @param res
+     * @param exp is the set of expected answers
+     * @param res is the list of returned answers
      * @return the precision
      */
     public float getPrecision(LinkedHashSet<String> exp, ArrayList<String> res) {
@@ -63,9 +63,9 @@ public class BulkCheck {
      * It takes as input a response (res) and the set of correct answers (exp)
      * and computes the recall
      *
-     * @param exp
-     * @param res
-     * @return
+     * @param exp is the set of expected answers
+     * @param res is the list of returned answers
+     * @return the recall
      */
     public float getRecall(LinkedHashSet<String> exp, ArrayList<String> res) {
         int counter = 0;

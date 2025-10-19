@@ -20,6 +20,9 @@ import java.util.*;
 import static config.SoundexGrConfig.*;
 import static evaluation.BulkCheck.*;
 
+/**
+ * The main dashboard of the application
+ */
 public class Dashboard extends JFrame {
     AppController apCtlr;
 

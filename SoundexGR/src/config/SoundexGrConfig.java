@@ -3,6 +3,7 @@ package config;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -37,6 +38,13 @@ public class SoundexGrConfig {
         selectedMethod = newSelectedMethod;
     }
 
+
+    /**
+     * Get the number of distinct words in a dataset file.
+     *
+     * @param docName The name of the dataset file.
+     * @return The number of distinct words in the dataset file.
+     */
     public static int getNumberOfDistinctWords_of_DatasetFile(String docName) {
         File file = "All datasets".equals(docName)
                 ? new File("Resources/collection_words/All_datasets_words.txt")
@@ -58,6 +66,15 @@ public class SoundexGrConfig {
     }
 
 
+    /**
+     * Counts the total number of words in the specified dataset.
+     * If the dataset name is "All datasets", this method iterates through all dataset files
+     * and accumulates their word counts. Word counting for each individual file is delegated
+     * to {@link #countWordsInFile(File)}.
+     *
+     * @param docName the name of the dataset, or "All datasets" to include all
+     * @return the total number of words across the dataset(s)
+     */
     public static int getNumberOfTotalWords_of_DatasetFile(String docName) {
         int count = 0;
 
@@ -73,7 +90,7 @@ public class SoundexGrConfig {
                 if (!file.exists()) {
                     file = Paths.get("Resources", "collection", safeDn + ".dic").toFile();
                 }
-                count += getNumberOfTotalWords_of_File(file);
+                count += countWordsInFile(file);
             }
         } else {
             File file = Paths.get("Resources", "collection", safeDocName + ".txt").toFile();
@@ -83,14 +100,21 @@ public class SoundexGrConfig {
             if (!file.exists()) {
                 file = Paths.get("Resources", "collection", safeDocName + ".dic").toFile();
             }
-            count += getNumberOfTotalWords_of_File(file);
+            count += countWordsInFile(file);
         }
 
         return count;
     }
 
 
-    private static int getNumberOfTotalWords_of_File(File file) {
+    /**
+     * Counts the number of words in a given file.
+     * This method is used internally by {@link #getNumberOfTotalWords_of_DatasetFile(String)}.
+     *
+     * @param file the file to read
+     * @return the total number of words in the file, or 0 if the file does not exist
+     */
+    private static int countWordsInFile(File file) {
         int count = 0;
         if (!file.exists()) return 0;
 
