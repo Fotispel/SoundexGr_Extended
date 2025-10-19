@@ -1,0 +1,13 @@
+Length: 3 Avg F-score: 0.22027749
+Length: 4 Avg F-score: 0.4415002
+Length: 5 Avg F-score: 0.63428736
+Length: 6 Avg F-score: 0.71545804
+Length: 7 Avg F-score: 0.755596
+Length: 8 Avg F-score: 0.7795615
+Length: 9 Avg F-score: 0.8158744
+Length: 10 Avg F-score: 0.8277038
+Length: 11 Avg F-score: 0.83292264
+Length: 12 Avg F-score: 0.83292264
+Length: 13 Avg F-score: 0.83292264
+Length: 14 Avg F-score: 0.83292264
+Length: 15 Avg F-score: 0.83292264
