@@ -46,8 +46,8 @@ public class Dashboard extends JFrame {
     static JButton swapB;
     static JButton demoB;
 
-    static Font appTextfont = new Font("monospaced", Font.BOLD, 18);  //  Font.PLAIN Font.BOLD
-    static Font consoleTextfont = new Font("monospaced", Font.PLAIN, 12);  //  Font.PLAIN Font.BOLD
+    static Font appTextfont = new Font("monospaced", Font.BOLD, 18);
+    static Font consoleTextfont = new Font("monospaced", Font.PLAIN, 12);
     static Font appButtonfont = new Font("serif", Font.PLAIN, 18);
 
     /**
@@ -278,7 +278,7 @@ public class Dashboard extends JFrame {
             parentPanel.add(outputPanel);
         }
 
-    } // create output
+    }
 
 
     void createConsoleOutput(JPanel parentPanel) {
@@ -426,7 +426,6 @@ public class Dashboard extends JFrame {
         // Map: display name -> internal name
         java.util.Map<String, String> displayToInternal = new java.util.HashMap<>();
 
-        // Προσθέτουμε "All datasets"
         displayToInternal.put("All datasets", "All datasets");
 
         String[] comboNames = new String[DatasetFiles.length + 1];

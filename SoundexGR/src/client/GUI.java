@@ -15,7 +15,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.*;
+
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
 import evaluation.DictionaryBasedMeasurements;
@@ -81,13 +84,14 @@ class AppController implements ActionListener {
             JTextArea demoTextArea = new JTextArea();
             demoTextArea.setLineWrap(true);
             demoTextArea.setWrapStyleWord(true);
+            demoTextArea.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+
             JScrollPane scrollPane = new JScrollPane(demoTextArea);
             scrollPane.setPreferredSize(new Dimension(780, 510));
 
             // Panel to hold buttons (words)
             JPanel wordButtonsPanel = new JPanel(new FlowLayout());
 
-            // Add both to card panel
             cardPanel.add(scrollPane, "TEXT_AREA");
             cardPanel.add(wordButtonsPanel, "BUTTONS");
 
@@ -102,24 +106,36 @@ class AppController implements ActionListener {
                 String inputText = demoTextArea.getText();
                 StringBuilder outputText = new StringBuilder();
 
-                ArrayList<String> tokens = Tokenizer.getTokens(inputText);
+                ArrayList<String> tokens = new ArrayList<>();
+
+                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}/<>&]").matcher(inputText);
+                while (matcher.find()) {
+                    tokens.add(matcher.group());
+                }
 
                 for (String token : tokens) {
-                    System.out.println("Token: " + token);
-                    if (token.length() < 3) {
-                        System.out.println("Token too short: " + token);
-                        outputText.append(token).append(" ");
-                        continue;
-                    }
-                    System.out.println("Length before getMatchings= " + getAppSoundexCodeLen());
-                    String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen()) + "\n";
-                    if (DictionaryMatcher.FirstMatch == null || DictionaryMatcher.FirstMatch.isEmpty()) {
-                        System.out.println("No match found for: " + token);
-                        outputText.append(token).append(" ");
+                    if (token.matches("[.,!?;:{}/<>&]")) {
+                        outputText.append(token);
                     } else {
-                        String firstMatch = DictionaryMatcher.FirstMatch;
-                        System.out.println("First match for " + token + " is " + firstMatch);
-                        outputText.append(firstMatch).append(" ");
+                        if (outputText.length() > 0 && outputText.charAt(outputText.length() - 1) != ' ') {
+                            outputText.append(" ");
+                        }
+
+                        if (token.length() < 3) {
+                            outputText.append(token);
+                            continue;
+                        }
+
+                        String output = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen());
+                        String firstMatch = (DictionaryMatcher.FirstMatch != null && !DictionaryMatcher.FirstMatch.isEmpty())
+                                ? DictionaryMatcher.FirstMatch
+                                : token;
+
+                        if (Character.isUpperCase(token.charAt(0))) {
+                            firstMatch = firstMatch.substring(0, 1).toUpperCase() + firstMatch.substring(1);
+                        }
+
+                        outputText.append(firstMatch);
                     }
                 }
 
@@ -146,8 +162,8 @@ class AppController implements ActionListener {
                                     wordFrame.setSize(400, 200);
                                     wordFrame.setLocationRelativeTo(null);
 
-                            String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen());
-                            JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
+                                    String res = DictionaryMatcher.getMatchings(token, getAppSoundexCodeLen());
+                                    JPanel buttonsMatchingPanel = new JPanel(new FlowLayout());
                                     for (String matching : DictionaryMatcher.rankedWords) {
                                         JButton matchingButton = new JButton(matching);
                                         matchingButton.setBackground(ColorMgr.colorButtonMatch);
@@ -157,13 +173,20 @@ class AppController implements ActionListener {
                                             String newWord = matchingButton.getText();
                                             String oldWord = wordButton.getText();
 
-                                            // replaces oldWord in output text with newWord
+
+                                            if (oldWord.equals(oldWord.toUpperCase())) {
+                                                newWord = newWord.toUpperCase();
+                                            } else if (!oldWord.isEmpty() && Character.isUpperCase(oldWord.charAt(0))) {
+                                                newWord = newWord.substring(0, 1).toUpperCase() + newWord.substring(1);
+                                            }
+
                                             String outputText = demoTextArea.getText();
                                             outputText = outputText.replace(oldWord, newWord);
                                             demoTextArea.setText(outputText);
 
                                             wordButton.setText(newWord);
                                         });
+
 
                                         buttonsMatchingPanel.add(matchingButton);
                                     }
