@@ -35,8 +35,6 @@ public class BulkCheck {
     Map<Integer, Integer> length_per_docSize = new HashMap<>();
     public static List<String> datasetFileWords = new ArrayList<>();
 
-    public static ArrayList<String> DatasetFiles_Misspellings = new ArrayList<>();
-
     public static Map<String, Integer> length_per_DocName = new HashMap<>();
 
     static MeasurementsWriter mw = null; // for writing evaluation measurements in a file
@@ -107,8 +105,8 @@ public class BulkCheck {
      */
     public void check(Utilities utils, String misspellings_path, String type, String fileToWrite, int maxWordNum)
             throws FileNotFoundException, IOException {
-        // FileWriter fr = new FileWriter(fileToWrite); // opens the file to write
-        // (currently does not write anything)
+        // FileWriter fr = new FileWriter(fileToWrite);
+
         float total_pre = 0;
         float total_rec = 0;
         int counter_words = 0;
@@ -224,8 +222,6 @@ public class BulkCheck {
                  * mw.write(SoundexGRExtra.LengthEncoding + ","); // writing to file
                  */
 
-                // System.out.format("NWords:%d \t Pre:%.3f Rec:%.3f F1:%.3f ", numOfWords,
-                // avgPrecision, avgRecall, avgFmeasure);
                 break;
             case "Predefined length":
                 int newLength = DictionaryBasedMeasurements
@@ -238,7 +234,7 @@ public class BulkCheck {
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
 
-                HybridMethod_execution(misspellings_path, null, utils, type, null);
+                HybridMethod_execution(misspellings_path, null, null);
                 break;
 
             case "Hybrid method ii-iii":
@@ -261,7 +257,7 @@ public class BulkCheck {
                             pre_length + 2};
                 }
 
-                HybridMethod_execution(misspellings_path, lengthsForTesting, utils, type, null);
+                HybridMethod_execution(misspellings_path, lengthsForTesting, null);
                 break;
 
             default:
@@ -287,12 +283,10 @@ public class BulkCheck {
      *
      * @param misspellings_path the file with the eval collection
      * @param lengthsForTesting an array with the lengths to be tested
-     * @param utils             Utilities object
-     * @param type              the matching (soundex) algorith to be applied
      * @param K_fixed           if not null then it is the fixed K value to be used, otherwise K is calculated
      * @throws IOException
      */
-    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Utilities utils, String type, Float K_fixed)
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Float K_fixed)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
@@ -489,7 +483,7 @@ public class BulkCheck {
                 // "Resources/names/newcollection.txt" // test purposes
         }; // evaluation collections
 
-        String OptionsToEvaluate[] = {
+        String[] OptionsToEvaluate = {
                 "exactMatch",
                 "soundex",
                 "original",
@@ -537,7 +531,7 @@ public class BulkCheck {
 
                     // System.out.println(">>>>>"+outputFileName);
                     bulkCheckRun.check(utils, datasetFile, optionToEvaluate, outputFileName, maxWordNum);
-                    System.out.println(""); // -------------------------------------------------");
+                    System.out.println(); // -------------------------------------------------");
                 }
                 utils.clear();
             }
@@ -572,7 +566,7 @@ public class BulkCheck {
                 "Resources/names/same_soundedExtended.txt" // same sounded (more)
         };
 
-        String OptionsToEvaluate[] = {"stemcase"};
+        String[] OptionsToEvaluate = {"stemcase"};
         String outputFile = "Resources/names/results/sames-stemmer.txt"; // file for writing
 
         try {
@@ -595,8 +589,8 @@ public class BulkCheck {
     /**
      * Writes the words of each document to a separate file name_words.txt
      *
-     * @param allWordsByDoc
-     * @param DocNames
+     * @param allWordsByDoc a set of words per document
+     * @param DocNames     the names of the documents
      */
     private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
         try {
@@ -760,7 +754,7 @@ public class BulkCheck {
                 }
                 output.append("\n");
             }
-            String misspellingsOut =
+            String misspellingFile =
                     "All datasets".equals(selectedDoc)
                             ? "Resources/collection_words_misspellings/misspellings_All_datasets_words.txt"
                             : "Resources/collection_words_misspellings/misspellings_" + selectedDoc + "_words.txt";
@@ -773,12 +767,7 @@ public class BulkCheck {
                 }
             }
 
-            utils.writeToFile(output.toString(), misspellingsOut);
-
-            String misspellingFile =
-                    "All datasets".equals(getSelectedDatasetFile())
-                            ? "Resources//collection_words_misspellings//misspellings_All_datasets_words.txt"
-                            : "Resources//collection_words_misspellings//misspellings_" + getSelectedDatasetFile() + "_words.txt";
+            utils.writeToFile(output.toString(), misspellingFile);
 
             String SelectedDatasetFile =
                     "All datasets".equals(getSelectedDatasetFile())
