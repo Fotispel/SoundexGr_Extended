@@ -13,16 +13,17 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
 import utils.MeasurementsWriter;
 import utils.Utilities;
+
 import static client.Dashboard.getAppSoundexCodeLen;
 import static client.Dashboard.setAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
 import static evaluation.DictionaryBasedMeasurements.buildCodeToWordsMap;
 import static evaluation.DictionaryBasedMeasurements.returnWordsHavingTheSameCode;
-
 
 
 /**
@@ -117,8 +118,8 @@ public class BulkCheck {
         long start = System.nanoTime();
 
         switch (getSelectedMethod()) {
-            case "Real-time length calculation":
-                System.out.println("Real-time length calculation");
+            case "Exhaustive length calculation":
+                System.out.println("Exhaustive length calculation");
 
                 boolean bounded = maxWordNum != 0;
                 Set<String> seenWords = new HashSet<>();
@@ -147,10 +148,12 @@ public class BulkCheck {
                 for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
                     setAppSoundexCodeLen(length_for_testing);
-                    String newds = Paths.get(System.getProperty("user.dir"),
-                            "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+                    String newds;
 
-                    if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                    if (!Objects.equals(getSelectedDatasetFile(), "All datasets"))
+                        newds = Paths.get(System.getProperty("user.dir"),
+                                "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+                    else
                         newds = Paths.get(System.getProperty("user.dir"),
                                 "Resources/collection_words/All_datasets_words.txt").toString();
                     codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
@@ -590,7 +593,7 @@ public class BulkCheck {
      * Writes the words of each document to a separate file name_words.txt
      *
      * @param allWordsByDoc a set of words per document
-     * @param DocNames     the names of the documents
+     * @param DocNames      the names of the documents
      */
     private static void write_wordsOfDoc_to_files(Map<String, Set<String>> allWordsByDoc, ArrayList<String> DocNames) {
         try {
@@ -774,7 +777,7 @@ public class BulkCheck {
                             ? "Resources//collection_words//All_datasets_words.txt"
                             : "Resources//collection_words//" + getSelectedDatasetFile() + "_words.txt";
             System.out.println("\n[" + SelectedDatasetFile + "]: ");
-            utils.readFile(misspellingFile); // Retrieve the file at index j
+            utils.readFile(misspellingFile);
             bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
             Toolkit.getDefaultToolkit().beep();
             utils.clear();

@@ -502,7 +502,7 @@ public class Dashboard extends JFrame {
         JLabel methodLabel = new JLabel("Method:");
 
         // JComboBox for selecting dataset files
-        String[] methods = {"", "Real-time length calculation", "Predefined length", "Hybrid method i-ii", "Hybrid method ii-iii"};
+        String[] methods = {"", "Exhaustive length calculation", "Predefined length", "Hybrid method i-ii", "Hybrid method ii-iii"};
 
         JComboBox<String> methodComboBox = new JComboBox<>(methods);
 
@@ -510,7 +510,7 @@ public class Dashboard extends JFrame {
         methodComboBox.addActionListener(e -> {
             selectedMethod = (String) methodComboBox.getSelectedItem();
 
-            assert (Objects.equals(selectedMethod, "Real-time length calculation") ||
+            assert (Objects.equals(selectedMethod, "Exhaustive length calculation") ||
                     Objects.equals(selectedMethod, "Predefined length") ||
                     Objects.equals(selectedMethod, "Hybrid method i-ii") ||
                     Objects.equals(selectedMethod, "Hybrid method ii-iii")) ||

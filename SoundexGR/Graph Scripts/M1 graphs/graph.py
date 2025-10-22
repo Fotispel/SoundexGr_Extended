@@ -23,7 +23,7 @@ plt.plot(lengths, fscores, marker='o', linestyle='-', color='blue', label='Avg F
 
 plt.plot(max_length, max_fscore, 'ro', markersize=10, label=f'Max F-score = {max_fscore:.3f}')
 
-plt.title("Progression of F-score over Code Length (Real-Time) for " + input_file)
+plt.title("Progression of F-score over Code Length (Exhaustive) for " + input_file)
 plt.xlabel("Code Length")
 plt.ylabel("Average F-score")
 plt.grid(True)

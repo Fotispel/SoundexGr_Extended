@@ -271,7 +271,7 @@ public class DictionaryBasedMeasurements {
         }
 
         switch (SelectedMethod) {
-            case ("Real-time length calculation"):
+            case ("Exhaustive length calculation"):
                 if (File_index != -1) {
                     // If the file index was found, calculate the length
                     int length = length_per_DocName.get(getSelectedDatasetFile());
