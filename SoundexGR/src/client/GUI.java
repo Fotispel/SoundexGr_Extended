@@ -109,26 +109,26 @@ class AppController implements ActionListener {
             cardPanel.add(searchAndTextPanel, "TEXT_AREA");
             cardPanel.add(wordButtonsPanel, "BUTTONS");
 
-            JButton runDemoButton = new JButton("Run Demo");
+            JButton textCorrectionButton = new JButton("Text Correction");
 
             JCheckBox editTextCheckBox = new JCheckBox("Edit Text", true);
             editTextCheckBox.addActionListener(e -> demoTextArea.setEditable(editTextCheckBox.isSelected()));
 
-            runDemoButton.addActionListener(e -> {
-                System.out.println("Run Demo with length " + getAppSoundexCodeLen() +
+            textCorrectionButton.addActionListener(e -> {
+                System.out.println("Text Correction with length " + getAppSoundexCodeLen() +
                         " and dataset " + getSelectedDatasetFile());
                 String inputText = demoTextArea.getText();
                 StringBuilder outputText = new StringBuilder();
 
                 ArrayList<String> tokens = new ArrayList<>();
 
-                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}/<>&]").matcher(inputText);
+                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}()/<>&]").matcher(inputText);
                 while (matcher.find()) {
                     tokens.add(matcher.group());
                 }
 
                 for (String token : tokens) {
-                    if (token.matches("[.,!?;:{}/<>&]")) {
+                    if (token.matches("[.,!?;:{}()/<>&]")) {
                         outputText.append(token);
                     } else {
                         if (outputText.length() > 0 && outputText.charAt(outputText.length() - 1) != ' ') {
@@ -256,7 +256,7 @@ class AppController implements ActionListener {
                 int limit = Math.min(similarWords.size(), 5);
                 similarWords = new ArrayList<>(similarWords.subList(0, limit));
 
-                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}/<>&]").matcher(inputText);
+                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}()/<>&]").matcher(inputText);
                 while (matcher.find()) {
                     String word = matcher.group();
 
@@ -285,7 +285,7 @@ class AppController implements ActionListener {
             });
 
 
-            searchPanel.add(runDemoButton);
+            searchPanel.add(textCorrectionButton);
             searchPanel.add(editTextCheckBox);
             searchPanel.add(new JLabel("Search:"));
             searchPanel.add(searchField);
@@ -365,7 +365,7 @@ class AppController implements ActionListener {
 
             JPanel controlPanel = new JPanel(new FlowLayout());
             controlPanel.add(closeButton);
-            controlPanel.add(runDemoButton);
+            controlPanel.add(textCorrectionButton);
             controlPanel.add(editTextCheckBox);
 
             JPanel panel = new JPanel(new BorderLayout());
