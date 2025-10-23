@@ -16,9 +16,12 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import SoundexGR.SoundexGRExtra;
 import stemmerWrapper.StemmerWrapper;
 import evaluation.BulkCheck.*;
+
+import static client.Dashboard.getAppSoundexCodeLen;
 import static config.SoundexGrConfig.*;
 import static evaluation.BulkCheck.length_per_DocName;
 
@@ -53,10 +56,6 @@ public class DictionaryBasedMeasurements {
      * @param resourcePlace the resource place
      */
     public static void setDictionaryLocation(String resourcePlace) {
-        resourcePlace = "All datasets".equals(getSelectedDatasetFile())
-                ? "\\Resources\\collection_words\\All_datasets_words.txt"
-                : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
-
         if (resourcePlace.startsWith("C:"))
             placeDict = resourcePlace;
         else
@@ -259,53 +258,22 @@ public class DictionaryBasedMeasurements {
     }
 
 
-    public static int calculateSuggestedCodeLen(String SelectedMethod) {
-        int File_index = -1;
-
-        // Search for the selected dataset file in the datasetFileList
-        for (int i = 0; i < BulkCheck.DatasetFiles.length; i++) {
-            if (BulkCheck.DatasetFiles[i].endsWith(getSelectedDatasetFile() + ".txt")) {
-                File_index = i;
-                break;
-            }
+    public static int calculatePredefinedLength() {
+        int numWords = getNumberOfDistinctWords_of_DatasetFile(getSelectedDatasetFile());
+        if (numWords <= 0) {
+            throw new RuntimeException("Number of words should be greater than 0");
+        } else if (numWords <= 100) {
+            Dashboard.setAppSoundexCodeLen(4);
+        } else if (numWords <= 1000) {
+            Dashboard.setAppSoundexCodeLen(7);
+        } else if (numWords <= 2000) {
+            Dashboard.setAppSoundexCodeLen(8);
+        } else if (numWords <= 3000) {
+            Dashboard.setAppSoundexCodeLen(11);
+        } else {
+            Dashboard.setAppSoundexCodeLen(12);
         }
-
-        switch (SelectedMethod) {
-            case ("Exhaustive length calculation"):
-                if (File_index != -1) {
-                    // If the file index was found, calculate the length
-                    int length = length_per_DocName.get(getSelectedDatasetFile());
-                    Dashboard.setAppSoundexCodeLen(length);
-                    return length;
-                } else {
-                    // Handle the case where the selected file was not found
-                    System.err.println("File not found: " + getSelectedDatasetFile());
-                    return -1;
-                }
-            case ("Predefined length"):
-                int numWords = getNumberOfDistinctWords_of_DatasetFile(getSelectedDatasetFile());
-                if (numWords <= 0) {
-                    throw new RuntimeException("Number of words should be greater than 0");
-                } else if (numWords <= 100) {
-                    Dashboard.setAppSoundexCodeLen(4);
-                } else if (numWords <= 1000) {
-                    Dashboard.setAppSoundexCodeLen(7);
-                } else if (numWords <= 2000) {
-                    Dashboard.setAppSoundexCodeLen(8);
-                } else if (numWords <= 3000) {
-                    Dashboard.setAppSoundexCodeLen(11);
-                } else {
-                    Dashboard.setAppSoundexCodeLen(12);
-                }
-                return appSoundexCodeLen;
-            case ("Hybrid method i-ii"):
-                return SoundexGRExtra.LengthEncoding;
-            case ("Hybrid method ii-iii"):
-                return SoundexGRExtra.LengthEncoding;
-            default:
-                System.out.println("Error: No method selected");
-                return -1;
-        }
+        return getAppSoundexCodeLen();
     }
 
 
@@ -368,6 +336,8 @@ public class DictionaryBasedMeasurements {
      * @throws IOException if an I/O error occurs
      */
     public static Map<String, Set<String>> buildCodeToWordsMap(String path) throws IOException {
+        path = Paths.get(System.getProperty("user.dir"), path).toString();
+
         setDictionaryLocation(path);
         codesToWords = new HashMap<>();
         try (BufferedReader bfr = new BufferedReader(

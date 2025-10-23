@@ -100,6 +100,10 @@ public class SoundexGrConfig {
             if (!file.exists()) {
                 file = Paths.get("Resources", "collection", safeDocName + ".dic").toFile();
             }
+            if (!file.exists()) {
+                file = Paths.get("Resources", "collection", "demo", safeDocName + ".txt").toFile();
+            }
+
             count += countWordsInFile(file);
         }
 

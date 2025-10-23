@@ -148,14 +148,11 @@ public class BulkCheck {
                 for (int length_for_testing = 3; length_for_testing <= 15; length_for_testing++) {
                     seenWords.clear();
                     setAppSoundexCodeLen(length_for_testing);
-                    String newds;
 
-                    if (!Objects.equals(getSelectedDatasetFile(), "All datasets"))
-                        newds = Paths.get(System.getProperty("user.dir"),
-                                "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
-                    else
-                        newds = Paths.get(System.getProperty("user.dir"),
-                                "Resources/collection_words/All_datasets_words.txt").toString();
+                    String newds = "All datasets".equals(getSelectedDatasetFile())
+                            ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                            : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
+
                     codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
 
 
@@ -198,12 +195,11 @@ public class BulkCheck {
                 System.out.println("\nMax F-score: " + max_f_score + " for length " + length_for_max_f_score + " with "
                         + counter_words + " words");
 
-                String newds = Paths.get(System.getProperty("user.dir"),
-                        "Resources/collection_words/" + getSelectedDatasetFile() + "_words.txt").toString();
+                setAppSoundexCodeLen(length_for_max_f_score);
 
-                if (Objects.equals(getSelectedDatasetFile(), "All datasets"))
-                    newds = Paths.get(System.getProperty("user.dir"),
-                            "Resources/collection_words/All_datasets_words.txt").toString();
+                String newds = "All datasets".equals(getSelectedDatasetFile())
+                        ? "\\Resources\\collection_words\\All_datasets_words.txt"
+                        : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
                 codesToWords = DictionaryBasedMeasurements.buildCodeToWordsMap(newds);
 
 
@@ -228,7 +224,7 @@ public class BulkCheck {
                 break;
             case "Predefined length":
                 int newLength = DictionaryBasedMeasurements
-                        .calculateSuggestedCodeLen(getSelectedMethod());
+                        .calculatePredefinedLength();
                 setAppSoundexCodeLen(newLength);
                 System.out.println("Predefined length and optimal length: " + newLength);
 
@@ -242,7 +238,7 @@ public class BulkCheck {
 
             case "Hybrid method ii-iii":
                 setAppSoundexCodeLen(DictionaryBasedMeasurements
-                        .calculateSuggestedCodeLen("Predefined length"));
+                        .calculatePredefinedLength()); // setting predefined length
 
                 int pre_length = getAppSoundexCodeLen();
                 assert pre_length != -1; // if length = -1 then there is no suitable code length
@@ -295,7 +291,7 @@ public class BulkCheck {
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{3, 4, 5, 7, 9, 12};
+            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 9, 12};
         }
 
         List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
@@ -307,7 +303,7 @@ public class BulkCheck {
                     ? "\\Resources\\collection_words\\All_datasets_words.txt"
                     : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
 
-            buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"), dsPath).toString());
+            buildCodeToWordsMap(dsPath);
 
             List<Integer> sizes = new ArrayList<>();
             Set<String> checked_codes = new HashSet<>();
@@ -374,7 +370,7 @@ public class BulkCheck {
                 ? "\\Resources\\collection_words\\All_datasets_words.txt"
                 : "\\Resources\\collection_words\\" + getSelectedDatasetFile() + "_words.txt";
 
-        buildCodeToWordsMap(Paths.get(System.getProperty("user.dir"), dsPath).toString());
+        buildCodeToWordsMap(dsPath);
 
         // print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
     }
@@ -624,6 +620,14 @@ public class BulkCheck {
                             word = word.substring(0, word.length() - 1);
                         }
 
+                        if (word.startsWith("\"") || word.startsWith("“") || word.startsWith("”")) {
+                            word = word.substring(1);
+                        }
+
+                        if (word.endsWith("\"") || word.endsWith("“") || word.endsWith("”")) {
+                            word = word.substring(0, word.length() - 1);
+                        }
+
                         // Remove commas and periods
                         if (word.endsWith(",") || word.endsWith(".")) {
                             word = word.substring(0, word.length() - 1);
@@ -713,6 +717,11 @@ public class BulkCheck {
             if (docName.contains(".")) {
                 docName = docName.substring(0, docName.lastIndexOf('.'));
             }
+
+            if (docURI.contains("/demo/")) {
+                continue;
+            }
+
 
             DocNames.add(docName);
 

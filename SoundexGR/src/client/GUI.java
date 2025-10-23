@@ -15,14 +15,21 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 
 import SoundexGR.SoundexGRExtra;
 import SoundexGR.SoundexGRSimple;
+import evaluation.BulkCheck;
 import evaluation.DictionaryBasedMeasurements;
 import evaluation.DictionaryMatcher;
+import org.apache.pdfbox.contentstream.operator.state.Restore;
 import utils.Tokenizer;
 
 import static client.Dashboard.*;
@@ -56,15 +63,16 @@ class AppController implements ActionListener {
             Dashboard.textInputArea.setText(Dashboard.textOutputArea.getText());
         }
 
+
         // Live Demo
         if (event.getSource() == Dashboard.demoB) {
-            int backup_length = getAppSoundexCodeLen();
-            String backup_selected_dataset = getSelectedDatasetFile();
-            String backup_method = getSelectedMethod();
+            int backup_length_exit = getAppSoundexCodeLen();
+            String backup_selected_dataset_exit = getSelectedDatasetFile();
+            String backup_method_exit = getSelectedMethod();
 
             setSelectedDatasetFile("gr");
             setSelectedMethod("Predefined length");
-            int newLen = DictionaryBasedMeasurements.calculateSuggestedCodeLen("Predefined length");
+            int newLen = DictionaryBasedMeasurements.calculatePredefinedLength();
             setAppSoundexCodeLen(newLen);
 
             System.out.println("Changed settings for demo: dataset=" + getSelectedDatasetFile() +
@@ -92,7 +100,13 @@ class AppController implements ActionListener {
             // Panel to hold buttons (words)
             JPanel wordButtonsPanel = new JPanel(new FlowLayout());
 
-            cardPanel.add(scrollPane, "TEXT_AREA");
+            JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
+            JPanel searchAndTextPanel = new JPanel(new BorderLayout());
+            searchAndTextPanel.add(searchPanel, BorderLayout.NORTH); // search panel
+            searchAndTextPanel.add(scrollPane, BorderLayout.CENTER); // text area
+
+            cardPanel.add(searchAndTextPanel, "TEXT_AREA");
             cardPanel.add(wordButtonsPanel, "BUTTONS");
 
             JButton runDemoButton = new JButton("Run Demo");
@@ -142,6 +156,141 @@ class AppController implements ActionListener {
                 System.out.println("Demo output: " + outputText);
                 demoTextArea.setText(outputText.toString());
             });
+
+
+            JTextField searchField = new JTextField(20);
+            JButton searchButton = new JButton("Search");
+
+
+            searchButton.addActionListener(e -> {
+                int backup_length_correction = getAppSoundexCodeLen();
+                String backup_selected_dataset_correction = getSelectedDatasetFile();
+                String backup_method_correction = getSelectedMethod();
+                System.out.println("Search pressed in Demo with length " + getAppSoundexCodeLen() +
+                        " and dataset " + getSelectedDatasetFile()
+                );
+
+                String query = searchField.getText().trim();
+                if (query.isEmpty()) return;
+
+                String inputText = demoTextArea.getText();
+                Highlighter highlighter = demoTextArea.getHighlighter();
+                highlighter.removeAllHighlights();
+
+                File collectionDir = new File("Resources/collection/demo");
+                if (!collectionDir.exists()) {
+                    boolean created = collectionDir.mkdirs();
+                    if (!created) {
+                        System.err.println("Failed to create directory: " + collectionDir.getAbsolutePath());
+                        return;
+                    }
+                }
+
+
+                try (FileWriter writer = new FileWriter("Resources\\collection\\demo\\search_ds.txt")) {
+                    writer.write(inputText);
+                    System.out.println("Saved text area content to search_ds.txt");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+
+                // --- Process demo search file ---
+                File demoFile = new File("Resources/collection/demo/search_ds.txt");
+                if (demoFile.exists()) {
+                    String demoOutput = "Resources/collection_words/search_ds_words.txt";
+                    try (BufferedReader reader = new BufferedReader(new FileReader(demoFile));
+                         BufferedWriter writer = new BufferedWriter(new FileWriter(demoOutput, false))) {
+
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            // Διαχωρισμός λέξεων (όπως στα υπόλοιπα docs)
+                            String[] tokens = line.split("\\s+");
+                            for (String word : tokens) {
+                                // Remove parentheses and brackets
+                                if (word.startsWith("(") || word.startsWith("[")) {
+                                    word = word.substring(1);
+                                }
+                                if (word.endsWith(")") || word.endsWith("]")) {
+                                    word = word.substring(0, word.length() - 1);
+                                }
+
+                                // Remove quotes
+                                if (word.startsWith("\"") || word.startsWith("“") || word.startsWith("”")) {
+                                    word = word.substring(1);
+                                }
+                                if (word.endsWith("\"") || word.endsWith("“") || word.endsWith("”")) {
+                                    word = word.substring(0, word.length() - 1);
+                                }
+
+                                // Remove commas and periods
+                                if (word.endsWith(",") || word.endsWith(".")) {
+                                    word = word.substring(0, word.length() - 1);
+                                }
+
+                                // Skip numbers
+                                if (word.matches("[0-9]+")) continue;
+
+                                // Skip non-Greek words
+                                if (!word.matches("[Α-Ωα-ωίϊΐόάέύϋΰήώΆΈΊΌΎΉΏ]*")) continue;
+
+                                // Skip very short words
+                                if (word.length() <= 2) continue;
+
+                                writer.write(word + "\n");
+                            }
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    System.err.println("Demo search file not found: " + demoFile.getAbsolutePath());
+                }
+
+                setSelectedDatasetFile("search_ds");
+                DictionaryBasedMeasurements.calculatePredefinedLength();
+
+                DictionaryMatcher.getMatchings(query, getAppSoundexCodeLen());
+                ArrayList<String> similarWords = new ArrayList<>(DictionaryMatcher.rankedWords);
+
+                int limit = Math.min(similarWords.size(), 5);
+                similarWords = new ArrayList<>(similarWords.subList(0, limit));
+
+                Matcher matcher = Pattern.compile("[\\p{L}]+|[.,!?;:{}/<>&]").matcher(inputText);
+                while (matcher.find()) {
+                    String word = matcher.group();
+
+                    for (String candidate : similarWords) {
+                        if (word.equalsIgnoreCase(candidate)) {
+                            try {
+                                highlighter.addHighlight(
+                                        matcher.start(),
+                                        matcher.end(),
+                                        new DefaultHighlighter.DefaultHighlightPainter(ColorMgr.colorButtonMatch)
+                                );
+                            } catch (BadLocationException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+                System.out.println("Search query: " + query + " | Found matches: " + similarWords);
+
+                RestoreSettings(
+                        backup_selected_dataset_correction,
+                        backup_method_correction,
+                        backup_length_correction
+                );
+            });
+
+
+            searchPanel.add(runDemoButton);
+            searchPanel.add(editTextCheckBox);
+            searchPanel.add(new JLabel("Search:"));
+            searchPanel.add(searchField);
+            searchPanel.add(searchButton);
+
 
             editTextCheckBox.addActionListener(e -> {
                 boolean selected = editTextCheckBox.isSelected();
@@ -206,12 +355,10 @@ class AppController implements ActionListener {
 
             JButton closeButton = new JButton("Close");
             closeButton.addActionListener(e -> {
-                setSelectedDatasetFile(backup_selected_dataset);
-                setSelectedMethod(backup_method);
-                setAppSoundexCodeLen(backup_length);
-                System.out.println("Restored previous settings: dataset=" + getSelectedDatasetFile() +
-                        ", method=" + getSelectedMethod() +
-                        ", length=" + getAppSoundexCodeLen()
+                RestoreSettings(
+                        backup_selected_dataset_exit,
+                        backup_method_exit,
+                        backup_length_exit
                 );
                 demoFrame.dispose();
             });
@@ -231,12 +378,10 @@ class AppController implements ActionListener {
             demoFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    setSelectedDatasetFile(backup_selected_dataset);
-                    setSelectedMethod(backup_method);
-                    setAppSoundexCodeLen(backup_length);
-                    System.out.println("Restored previous settings: dataset=" + getSelectedDatasetFile() +
-                            ", method=" + getSelectedMethod() +
-                            ", length=" + getAppSoundexCodeLen()
+                    RestoreSettings(
+                            backup_selected_dataset_exit,
+                            backup_method_exit,
+                            backup_length_exit
                     );
                 }
             });
