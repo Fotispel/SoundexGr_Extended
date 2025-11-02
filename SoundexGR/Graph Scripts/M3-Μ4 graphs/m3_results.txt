@@ -1,12 +1,12 @@
 Dataset,Method,F-Score
-Java,Hybrid_i-ii_K,0.90
+Java,Hybrid_i-ii_K,0.91
 Turing,Hybrid_i-ii_K,0.90
-Monogramma,Hybrid_i-ii_K,0.89
+Monogramma,Hybrid_i-ii_K,0.888
 Youtube,Hybrid_i-ii_K,0.92
 Seven against thebes,Hybrid_i-ii_K,0.84
 Electra,Hybrid_i-ii_K,0.78
 Oidypous tyrannos,Hybrid_i-ii_K,0.79
-Lysistrata,Hybrid_i-ii_K,0.81
+Lysistrata,Hybrid_i-ii_K,0.819
 Autumn,Hybrid_i-ii_K,0.77
 Erwtokritos,Hybrid_i-ii_K,0.65
 Java,Hybrid_i-ii_fixedK,0.75

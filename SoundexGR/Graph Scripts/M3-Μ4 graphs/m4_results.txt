@@ -1,7 +1,7 @@
 Dataset,Method,F-Score
-Java,Hybrid_ii-iii_K,0.91
+Java,Hybrid_ii-iii_K,0.919
 Turing,Hybrid_ii-iii_K,0.92
-Monogramma,Hybrid_ii-iii_K,0.91
+Monogramma,Hybrid_ii-iii_K,0.911
 Youtube,Hybrid_ii-iii_K,0.86
 Seven against thebes,Hybrid_ii-iii_K,0.89
 Electra,Hybrid_ii-iii_K,0.85
@@ -9,13 +9,13 @@ Oidypous tyrannos,Hybrid_ii-iii_K,0.857
 Lysistrata,Hybrid_ii-iii_K,0.875
 Autumn,Hybrid_ii-iii_K,0.885
 Ervtokritos,Hybrid_ii-iii_K,0.805
-Java,Hybrid_ii-iii_fixedK,0.90
-Turing,Hybrid_ii-iii_fixedK,0.89
+Java,Hybrid_ii-iii_fixedK,0.91
+Turing,Hybrid_ii-iii_fixedK,0.899
 Monogramma,Hybrid_ii-iii_fixedK,0.88
-Youtube,Hybrid_ii-iii_fixedK,0.86
-Seven against thebes,Hybrid_ii-iii_fixedK,0.86
-Electra,Hybrid_ii-iii_fixedK,0.84
+Youtube,Hybrid_ii-iii_fixedK,0.76
+Seven against thebes,Hybrid_ii-iii_fixedK,0.89
+Electra,Hybrid_ii-iii_fixedK,0.85
 Oidypous tyrannos,Hybrid_ii-iii_fixedK,0.856
 Lysistrata,Hybrid_ii-iii_fixedK,0.874
 Autumn,Hybrid_ii-iii_fixedK,0.882
-Ervtokritos,Hybrid_ii-iii_fixedK,0.8
+Erwtokritos,Hybrid_ii-iii_fixedK,0.8
