@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Φόρτωση δεδομένων
 df = pd.read_csv("results.csv")
 
 methods = ["M1", "M2", "M3calc", "M3fix", "M4calc", "M4fix"]
@@ -17,7 +16,6 @@ for i, method in enumerate(methods):
     len_col = f"{method}_len"
     plt.bar(x + i * width, df[f_col], width, label=method, color=colors[i])
     
-    # Εμφάνιση μήκους πάνω από κάθε μπάρα
     for j, val in enumerate(df[f_col]):
         plt.text(x[j] + i * width, val + 0.005, str(df[len_col][j]), 
                  ha='center', va='bottom', fontsize=7, rotation=0)

@@ -233,7 +233,7 @@ public class BulkCheck {
             case "Hybrid method i-ii":
                 System.out.println("Hybrid method i-ii");
 
-                HybridMethod_execution(misspellings_path, null, null);
+                HybridMethod_execution(misspellings_path, null, null, utils);
                 break;
 
             case "Hybrid method ii-iii":
@@ -256,7 +256,7 @@ public class BulkCheck {
                             pre_length + 2};
                 }
 
-                HybridMethod_execution(misspellings_path, lengthsForTesting, null);
+                HybridMethod_execution(misspellings_path, lengthsForTesting, null, utils);
                 break;
 
             default:
@@ -285,18 +285,18 @@ public class BulkCheck {
      * @param K_fixed           if not null then it is the fixed K value to be used, otherwise K is calculated
      * @throws IOException
      */
-    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Float K_fixed)
+    public void HybridMethod_execution(String misspellings_path, int[] lengthsForTesting, Float K_fixed, Utilities utils)
             throws IOException {
         Map<Integer, List<Integer>> listSizesPerLength = new HashMap<>();
         Map<Integer, List<Set<String>>> SameCodeWords_per_length = new HashMap<>();
 
         if (lengthsForTesting == null) {
-            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 9, 12};
+            lengthsForTesting = new int[]{3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         }
 
         List<String> misspellingLines = Files.readAllLines(Paths.get(System.getProperty("user.dir"), misspellings_path));
 
-        for (int length_word = lengthsForTesting[0]; length_word <= lengthsForTesting[lengthsForTesting.length - 1]; length_word++) {
+        for (int length_word : lengthsForTesting) {
             setAppSoundexCodeLen(length_word);
 
             String dsPath = "All datasets".equals(getSelectedDatasetFile())
@@ -372,7 +372,7 @@ public class BulkCheck {
 
         buildCodeToWordsMap(dsPath);
 
-        // print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, type);
+        //print_precision_recall_f1(Paths.get(System.getProperty("user.dir"), misspellings_path).toString(), utils, "soundex");
     }
 
 
