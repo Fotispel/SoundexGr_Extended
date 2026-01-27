@@ -17,12 +17,12 @@ This repository contains the implementation and experimental evaluation of metho
 
 * Selects length based only on the number of distinct words
 * Uses empirically derived intervals
-* It is extremely fast (milliseconds) but may deviate from optimal length
+* It is extremely fast but may deviate from optimal length
 
 ### M3 – Range-Based Optimization
 
 * Tests lengths within a range [3,12]
-* Chooses the length whose **average collision list size** is closest to a target value `K`
+* Chooses the length whose average collision list size is closest to a target value `K`
 * Supports:
 
   * dynamic `K`
