@@ -27,7 +27,7 @@ This repository contains the implementation and experimental evaluation of metho
   * fixed `K` (e.g. `K = 1.5`)
 * It is fast and stable but achieves lower accuracy
 
-### M4 – Hybrid (M2 + M3)
+### M4 – Hybrid (M2 and M3)
 
 * Uses M2 to get an initial estimate
 * Refines locally using M3-style optimization
