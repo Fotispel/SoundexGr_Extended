@@ -47,12 +47,6 @@ The methods were evaluated on 10 Greek datasets of varying size and genre:
 
 Dataset sizes range from 80 to 9,000+ distinct words.
 
-## Implementation Notes
-
-* Short words (< 3 characters) are ignored in length estimation
-* SoundexGR codes are computed for lengths typically between 3 and 14
-* Evaluation uses Precision, Recall, and F-score
-
 ## Applicability
 
 The proposed methods can be directly applied to:
