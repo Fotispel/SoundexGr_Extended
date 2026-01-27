@@ -1,6 +1,8 @@
 # SoundexGR Optimal Length Selection
 On Finding the Optimal SoundexGR Code Length for Tackling the Out-of-Vocabulary Problem
 
+This project builds upon the [SoundexGR algorithm](https://github.com/YannisTzitzikas/SoundexGR) proposed by Kavros and Tzitzikas (2023) for Greek phonetic matching. While SoundexGR achieves high accuracy, its performance depends on the chosen code length. Our work extends this by automatically selecting the optimal code length for a given dataset or task.
+
 This repository contains the implementation and experimental evaluation of methods for automatically selecting the optimal SoundexGR code length for Greek phonetic matching.
 
 ## Methods Overview
