@@ -102,6 +102,7 @@ public class DictionaryMatcher {
 
     public static String getMatchings(String word, int codeLength) {
         FirstMatchFound = false;
+        rankedWords.clear(); // Clear previous results
 
         String dictResourcePlace = "All datasets".equals(getSelectedDatasetFile())
                 ? "\\Resources\\collection_words\\All_datasets_words.txt"
@@ -113,6 +114,7 @@ public class DictionaryMatcher {
         if (lookup(word)) {
             FirstMatch = word;
             FirstMatchFound = true;
+            rankedWords.add(word);
             return "The word \"" + word + "\" exists in the dictionary.";
         } else {
             output = "APPROXIMATE MATCHES FOR " + word + "\n";
