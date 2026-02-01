@@ -4,7 +4,7 @@ import numpy as np
 
 df = pd.read_csv("results.csv")
 
-methods = ["M1", "M2", "M3calc", "M3fix", "M4calc", "M4fix"]
+methods = ["M1", "M2", "M3calc", "M3fixed", "M4calc", "M4fixed"]
 colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#9467bd", "#8c564b", "#e377c2"]
 
 x = np.arange(len(df["Dataset"]))
