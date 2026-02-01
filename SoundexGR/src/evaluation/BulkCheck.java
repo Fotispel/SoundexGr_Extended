@@ -118,9 +118,7 @@ public class BulkCheck {
         long start = System.nanoTime();
 
         switch (getSelectedMethod()) {
-            case "Exhaustive length calculation":
-                System.out.println("Exhaustive length calculation");
-
+            case "M1 - Exhaustive length calculation":
                 boolean bounded = maxWordNum != 0;
                 Set<String> seenWords = new HashSet<>();
 
@@ -222,21 +220,19 @@ public class BulkCheck {
                  */
 
                 break;
-            case "Predefined length":
+            case "M2 - Predefined length":
                 int newLength = DictionaryBasedMeasurements
                         .calculatePredefinedLength();
                 setAppSoundexCodeLen(newLength);
-                System.out.println("Predefined length and optimal length: " + newLength);
+                System.out.println("Predefined length: " + newLength);
 
                 //print_precision_recall_f1(misspellings_path, utils, type);
                 break;
-            case "Hybrid method i-ii":
-                System.out.println("Hybrid method i-ii");
-
+            case "M3 - Hybrid method i-ii":
                 HybridMethod_execution(misspellings_path, null, null, utils);
                 break;
 
-            case "Hybrid method ii-iii":
+            case "M4 - Hybrid method ii-iii":
                 setAppSoundexCodeLen(DictionaryBasedMeasurements
                         .calculatePredefinedLength()); // setting predefined length
 

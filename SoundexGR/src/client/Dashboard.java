@@ -506,7 +506,7 @@ public class Dashboard extends JFrame {
         JLabel methodLabel = new JLabel("Method:");
 
         // JComboBox for selecting dataset files
-        String[] methods = {"", "Exhaustive length calculation", "Predefined length", "Hybrid method i-ii", "Hybrid method ii-iii"};
+        String[] methods = {"", "M1 - Exhaustive length calculation", "M2 - Predefined length", "M3 - Hybrid method i-ii", "M4 - Hybrid method ii-iii"};
 
         JComboBox<String> methodComboBox = new JComboBox<>(methods);
 
