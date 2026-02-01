@@ -47,6 +47,20 @@ The methods were evaluated on 10 Greek datasets of varying size and genre:
 
 Dataset sizes range from 80 to 9,000+ distinct words.
 
+## Interface
+
+### Home screen
+![Home screen](SoundexGR/Resources/screenshots/home.png)
+
+### Dataset Drop-Down Menu
+![Dataset Drop-Down Menu](SoundexGR/Resources/screenshots/dataset_selection.png)
+
+### Method Drop-Down Menu
+![Method Drop-Down Menu](SoundexGR/Resources/screenshots/method_selection.png)
+
+### Result
+![Result](SoundexGR/Resources/screenshots/length_result.png)
+
 ## Applicability
 
 The proposed methods can be directly applied to:
