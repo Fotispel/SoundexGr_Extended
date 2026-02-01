@@ -61,6 +61,24 @@ Dataset sizes range from 80 to 9,000+ distinct words.
 ### Result
 ![Result](SoundexGR/Resources/screenshots/length_result.png)
 
+## Live Demo
+We have developed a tool for showcasing various possible functionalities, in particular for word correction and for
+search. As regards the first (word correction), The user can type/copy text, and then the tool enables the user to
+correct the wrongly spelled words. The corrections are computed based on the phonemic codes and based on the
+optimal length. This can be done for the entire text for the selected word, one screenshot is shown in Figure
+6a. As regards the second (search), the tool (see screenshot in Figure 7) allows the user search for words within
+the text they have entered in the text area. When the user enters a term into the search text slot and clicks the
+"Search" button, the matches, through SoundexGR with optimal code length, are highlighted.
+
+### Edit Text mode
+![Edit Text mode](SoundexGR/Resources/screenshots/demo/live_demo_edit.png)
+
+### Interactive mode
+![Interactive mode](SoundexGR/Resources/screenshots/demo/live_demo_interactive.png)
+
+### Search word in text
+![Search word in text](SoundexGR/Resources/screenshots/demo/search_word.png)
+
 ## Applicability
 
 The proposed methods can be directly applied to:
