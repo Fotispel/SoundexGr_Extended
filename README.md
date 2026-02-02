@@ -96,8 +96,13 @@ The proposed methods can be directly applied to:
 ### To build and run the application, execute:
 
 Using Git Bash
-```bash
+```
 ./run.sh
+```
+
+Using Command Prompt
+```
+.\run.cmd
 ```
 
 ## Author
