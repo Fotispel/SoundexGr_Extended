@@ -182,7 +182,7 @@ public class BulkCheck {
                     float avgRecall = total_rec / counter_words;
                     float avgFmeasure = 2 * avgPrecision * avgRecall / (avgPrecision + avgRecall);
 
-                    //System.out.println("Length: " + length_for_testing + " -> F-measure: " + avgFmeasure);
+                    //System.out.println("Length: " + length_for_testing + " , F-measure: " + avgFmeasure);
 
                     if (avgFmeasure > max_f_score) {
                         max_f_score = avgFmeasure;

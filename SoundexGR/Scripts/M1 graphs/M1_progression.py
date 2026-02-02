@@ -1,7 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 
-input_file = "java_m1_results.csv"
+input_file = "erwtokritos_m1_results.csv"
 
 lengths = []
 fscores = []
@@ -30,5 +30,5 @@ plt.ylim(0, 1)
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("java_results.png", dpi=300)
+plt.savefig("erwtokritos_m1_results.png", dpi=300)
 plt.show()
