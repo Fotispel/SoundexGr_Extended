@@ -91,6 +91,15 @@ The proposed methods can be directly applied to:
 * Structured data integration
 * Phonetic user interfaces
 
+## Running the Program
+
+### To build and run the application, execute:
+
+Using Git Bash
+```bash
+./run.sh
+```
+
 ## Author
 
 **Yannis Tzitzikas**
