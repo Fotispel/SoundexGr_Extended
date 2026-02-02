@@ -784,7 +784,6 @@ public class BulkCheck {
             System.out.println("\n[" + SelectedDatasetFile + "]: ");
             utils.readFile(misspellingFile);
             bulkCheckRun.check(utils, misspellingFile, "soundex", "Resources/names/results/sames-soundex.txt", 0);
-            Toolkit.getDefaultToolkit().beep();
             utils.clear();
         } catch (IOException ex) {
             System.out.println(ex);
